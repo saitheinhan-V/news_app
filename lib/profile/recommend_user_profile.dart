@@ -23,6 +23,7 @@ class _RelevantRecommendationState extends State<RelevantRecommendation> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 200.0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -148,6 +149,7 @@ class _FollowCardState extends State<FollowCard> {
   Widget build(BuildContext context) {
     return Container(
       width: 150.0,
+      height: 148.0,
       child: Stack(
         children: <Widget>[
           Card(
