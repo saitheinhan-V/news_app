@@ -24,4 +24,19 @@ class User{
     "phone": phone,
   };
 
+  User.fromJson(Map<String, dynamic> json)
+      : userID = json['id'],
+        userName = json['name'],
+        password = json['password'],
+        phone = json['phone'];
+
+  Map<String, dynamic> toJson() =>
+      {
+        'id': userID,
+        'name': userName,
+        'password': password,
+        'phone' : phone,
+      };
+
+
 }
