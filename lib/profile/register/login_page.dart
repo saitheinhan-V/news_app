@@ -211,7 +211,7 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
   TextEditingController passwordController=TextEditingController();
   ProgressDialog progressDialog;
   User user;
-  var baseUrl="http://192.168.0.110:8081/user";
+  //var baseUrl="http://192.168.0.110:8081/user";
 
   void submitRegisterForm() {
     if (loginFormKey.currentState.validate()) {
@@ -398,7 +398,7 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
 //    var response= await http.post(followURL,body: {
 //      "userID" : userID.toString(),
 //    });
-    var response=await http.post(baseUrl+"/"+id.toString());
+    var response=await http.post("/"+id.toString());
     var data=jsonDecode(response.body);
     print('Data Length===='+data.length.toString());
     SQLiteDbProvider.db.deleteFollower();
@@ -409,28 +409,68 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
     }
   }
 
-  _logIn(String phone,String password) async{
-    progressDialog.show();
-    Response response= await Dio().post(baseUrl+"/"+phone+"/"+password);
-    if(response.statusCode == 200){
-      var dataUser=jsonDecode(response.data);
-      if(dataUser.length !=0){
-        print('User exist');
-        print("Length"+ dataUser.length.toString());
-        print(dataUser['Username']+"====Name");
-        User user=User(dataUser['Userid'],dataUser['Username'],dataUser['Password'],dataUser['Phone']);
-         // Navigator.push(context, MaterialPageRoute(builder: (context)=> ProfilePage(userName: userName,userID: userID,)));
+  Future<User> _getUserInfo(String token) async{
+    var authorizeUrl="http://192.168.0.110:3000//api/auth/info";
 
-        insertFollower(dataUser['Userid']);
+    var response=await http.get(authorizeUrl,headers: {
+      'Authorization' : 'Bearer $token'
+    });
+      var dataUser=jsonDecode(response.body);
+      Map userMap=dataUser['data']['user'];
+      User user=User.fromJson(userMap);
+      print("Name===="+user.userName);
+    return user;
+
+  }
+
+  _logIn(String phone,String password) async{
+    var loginUrl="http://192.168.0.110:3000//api/auth/login";
+
+    progressDialog.show();
+//    var res=await http.get(baseUrl,headers: {
+//      'Authorization' : 'Bearer $token'
+//    });
+//    Response response= await Dio().post(baseUrl+"/"+phone+"/"+password);
+//    if(response.statusCode == 200){
+//      var dataUser=jsonDecode(response.data);
+//      if(dataUser.length !=0){
+//        print('User exist');
+//        print("Length"+ dataUser.length.toString());
+//        print(dataUser['Username']+"====Name");
+//        User user=User(dataUser['Userid'],dataUser['Username'],dataUser['Password'],dataUser['Phone']);
+//         // Navigator.push(context, MaterialPageRoute(builder: (context)=> ProfilePage(userName: userName,userID: userID,)));
+//
+//        insertFollower(dataUser['Userid']);
+//        SQLiteDbProvider.db.delete();
+//        SQLiteDbProvider.db.insert(user);
+//        progressDialog.hide();
+//        Navigator.pop(context , user);
+//      }else{
+//        print('User doesnot exist');
+//      }
+//      progressDialog.hide();
+//    }
+    var res= await http.post(loginUrl,body: {
+      "Phone" : phone,
+      "Password" : password,
+    });
+    print("Code==="+res.statusCode.toString());
+    print("Data=="+res.body.toString());
+    var data=jsonDecode(res.body);
+    var code=data['code'];
+    var msg=data['msg'];
+    var token;
+    if(code == 200){
+      token=data['data']['token'];
+      User user= await _getUserInfo(token);
+       // insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
         progressDialog.hide();
         Navigator.pop(context , user);
-      }else{
-        print('User doesnot exist');
-      }
-      progressDialog.hide();
     }
+    print(msg + token);
+    progressDialog.hide();
 //    var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
 //    //var selectUrl='https://firstgitlesson.000webhostapp.com/select.php';
 //    //var response = await http.get(Uri.encodeFull(selectUrl),headers: {"Accept":"application/json"});
