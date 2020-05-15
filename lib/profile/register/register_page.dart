@@ -170,29 +170,65 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     return userLists;
   }
 
+  Future<User> _getUserInfo(String token) async{
+    var authorizeUrl="http://192.168.0.110:3000//api/auth/info";
+
+    var response=await http.get(authorizeUrl,headers: {
+      'Authorization' : 'Bearer $token'
+    });
+    var dataUser=jsonDecode(response.body);
+    Map userMap=dataUser['data']['user'];
+    User user=User.fromJson(userMap);
+    print("Name===="+user.userName);
+    return user;
+
+  }
+
   _signUp(String name, String phoneNo, String passWord) async{
+    var registerUrl="http://192.168.0.110:3000//api/auth/register";
 
-    List<User> usersData= await getUser(phoneNo, passWord);
-    User users=usersData[0];
-      if(users.userID != 0){
-        print('User already exist');
+//    List<User> usersData= await getUser(phoneNo, passWord);
+//    User users=usersData[0];
+//      if(users.userID != 0){
+//        print('User already exist');
+//
+//      }else{
+//        print('User doesnot exist');
+//        var res= await http.post(baseUrl+"/"+name+"/"+phoneNo+"/"+passWord);
+//        if(res.statusCode == 200){
+//          print("Account creation success");
+//          List<User> userData= await getUser(phoneNo,passWord);
+//          if(userData.length!=0){
+//            User user=userData[0];
+//            insertFollower(user.userID);
+//            SQLiteDbProvider.db.delete();
+//            SQLiteDbProvider.db.insert(user);
+//            Navigator.pop(context , user);
+//          }
+//          //progressDialog.hide();
+//        }
+//      }
 
-      }else{
-        print('User doesnot exist');
-        var res= await http.post(baseUrl+"/"+name+"/"+phoneNo+"/"+passWord);
-        if(res.statusCode == 200){
-          print("Account creation success");
-          List<User> userData= await getUser(phoneNo,passWord);
-          if(userData.length!=0){
-            User user=userData[0];
-            insertFollower(user.userID);
-            SQLiteDbProvider.db.delete();
-            SQLiteDbProvider.db.insert(user);
-            Navigator.pop(context , user);
-          }
-          //progressDialog.hide();
-        }
-      }
+    var res= await http.post(registerUrl,body: {
+      "Username" : name,
+      "Phone" : phoneNo,
+      "Password" : passWord,
+    });
+    print("Code==="+res.statusCode.toString());
+    print("Data=="+res.body.toString());
+    var data=jsonDecode(res.body);
+    var code=data['code'];
+    var msg=data['msg'];
+    var token;
+    if(code == 200){
+      token=data['data']['token'];
+      User user= await _getUserInfo(token);
+      //insertFollower(user.userID);
+      SQLiteDbProvider.db.delete();
+      SQLiteDbProvider.db.insert(user);
+      Navigator.pop(context , user);
+    }
+    print(msg +"==="+ token);
       //progressDialog.hide();
     //pr.show();
     //var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
