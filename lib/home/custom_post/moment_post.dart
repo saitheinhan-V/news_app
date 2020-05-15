@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:news/models/user.dart';
+import 'package:news/database/database.dart';
 
 class MomentPost extends StatefulWidget {
   @override
@@ -15,20 +19,23 @@ class _MomentPostState extends State<MomentPost> {
   FocusNode focusNode;
 
   int count=0;
+  int userId=0;
   bool isShowSticker=false;
   bool isShowKeyboard=true;
   bool isWriting=false;
   bool first=true;
 
-
+  List<User> userList= List<User>();
   List<Asset> images = List<Asset>();
   String _error;
+  String link='';
   List<Widget> list=[];
 
   List<All> allList=[];
   int listLength=0;
   int maxImages=9;
   int index=0;
+  int like=0;
 
   void hideKeyboard() {
     focusNode.unfocus();
@@ -65,6 +72,14 @@ class _MomentPostState extends State<MomentPost> {
     focusNode=new FocusNode();
     list=List<Widget>()..add(buildAddButton());
     count=0;
+    setState(() {
+      checkUser().then((value){
+        userList=value;
+        if(userList.length != 0){
+          userId=userList[0].userID;
+        }
+      });
+    });
   }
 
   @override
@@ -76,6 +91,25 @@ class _MomentPostState extends State<MomentPost> {
     images.clear();
     focusNode.unfocus();
     focusNode.dispose();
+  }
+
+  Future<List<User>> checkUser() async{
+    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
+    List<User> userLists= await futureList;
+    return userLists;
+  }
+
+  Future<String> uploadImage(List<Asset> assets) async{
+    String link='';
+    var uploadUrl="http://localhost:3000//api/auth/multipleupload";
+    var response= await http.post(uploadUrl,body: {
+      "files" : assets
+    });
+    if(response.statusCode == 200){
+      var data=jsonDecode(response.body);
+      link=data['link'];
+    }
+    return link;
   }
 
   Future<bool> _onBackPressed(){
@@ -107,6 +141,63 @@ class _MomentPostState extends State<MomentPost> {
     ): Navigator.pop(context);
   }
 
+  newMomentPost(int user_id,int user_post_id,String caption,int like,String date) async{
+    var insertUrl="http://192.168.0.110:3000//api/momentpost";
+    var response=await http.post(insertUrl,body: {
+      "Userid" : user_id.toString(),
+      "Userpostid" : user_post_id.toString(),
+      "Caption" : caption,
+      "Likecount" : like,
+      "Createdate" : date,
+    });
+    if(response.statusCode ==200){
+      print("Your post has been uploaded");
+    }
+  }
+
+  uploadPost() async{
+    var userPostUrl="http://192.168.0.110:3000//api/userpost";
+    var response= await http.post(userPostUrl,body: {
+      "Userid" : userId,
+    });
+    if(response.statusCode == 200){
+      var data=jsonDecode(response.body);
+      var token=data['data']['token'];
+      var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
+          headers: {
+            'Authorization' : 'Bearer $token'
+          }
+      );
+      if(res.statusCode == 200){
+        var dataUser=jsonDecode(res.body);
+        var userPost=dataUser['data']['user_post'];
+        var userPostId=userPost['id'];
+        var create_date=userPost['create_date'];
+        print(userPostId + "==" + userPost['user_id'] + "==" + userPost['create_date']);
+        newMomentPost(userId,userPostId,textEditingController.text,like,create_date);
+      }
+    }
+  }
+
+  upload() async{
+    if(userId!=0){
+      if(images.length !=0){
+        uploadImage(images).then((value){
+          setState(() {
+            link=value;
+          });
+        });
+
+        uploadPost();
+
+      }else{
+        uploadPost();
+      }
+    }else{
+      print('Please log in or register to be able to post');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +207,13 @@ class _MomentPostState extends State<MomentPost> {
           (isWriting || list.length>1)? FlatButton(
             child: Text('Post',style: TextStyle(
               color: Colors.white,fontSize: 20.0
-            ),),
+            ),
+            ),
+            onPressed: (){
+              setState(() {
+                upload();
+              });
+            },
           ) : Container(),
         ],
       ),
@@ -133,6 +230,7 @@ class _MomentPostState extends State<MomentPost> {
                             Container(
                               padding: EdgeInsets.only(top: 5.0,left: 10.0,right: 10.0,bottom: 5.0),
                               child: TextField(
+                                controller: textEditingController,
                                 keyboardType: TextInputType.multiline,
                                 maxLines: null,
                                 focusNode: focusNode,
