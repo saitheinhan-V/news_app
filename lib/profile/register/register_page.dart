@@ -222,11 +222,15 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     var token;
     if(code == 200){
       token=data['data']['token'];
-      User user= await _getUserInfo(token);
-      //insertFollower(user.userID);
-      SQLiteDbProvider.db.delete();
-      SQLiteDbProvider.db.insert(user);
-      Navigator.pop(context , user);
+      if(token !=null){
+        SQLiteDbProvider.db.deleteToken();
+        SQLiteDbProvider.db.insertToken(token);
+        User user= await _getUserInfo(token);
+        //insertFollower(user.userID);
+        SQLiteDbProvider.db.delete();
+        SQLiteDbProvider.db.insert(user);
+        Navigator.pop(context , user);
+      }
     }
     print(msg +"==="+ token);
       //progressDialog.hide();

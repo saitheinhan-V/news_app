@@ -97,15 +97,15 @@ class _FollowingContentState extends State<FollowingContent> {
         }
         if(userID!=0){
           setState(() {
-            checkFollowing(userID).then((value){
-              setState(() {
-                followingList=value;
-                print('Follower====='+followingList.length.toString());
-                for(int i=0;i<followingList.length;i++){
-                    list.insert(list.length-1, _buildFollowingProfile(followingList[i].userName));
-                }
-              });
-            });
+//            checkFollowing(userID).then((value){
+//              setState(() {
+//                followingList=value;
+//                print('Follower====='+followingList.length.toString());
+//                for(int i=0;i<followingList.length;i++){
+//                    list.insert(list.length-1, _buildFollowingProfile(followingList[i].userName));
+//                }
+//              });
+//            });
           });
         }
       });

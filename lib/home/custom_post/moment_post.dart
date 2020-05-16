@@ -5,8 +5,10 @@ import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:news/models/token.dart';
 import 'package:news/models/user.dart';
 import 'package:news/database/database.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class MomentPost extends StatefulWidget {
   @override
@@ -17,6 +19,7 @@ class _MomentPostState extends State<MomentPost> {
 
   TextEditingController textEditingController;
   FocusNode focusNode;
+  ProgressDialog progressDialog;
 
   int count=0;
   int userId=0;
@@ -26,9 +29,11 @@ class _MomentPostState extends State<MomentPost> {
   bool first=true;
 
   List<User> userList= List<User>();
+  List<Token> tokenList=List<Token>();
   List<Asset> images = List<Asset>();
   String _error;
   String link='';
+  String userToken='';
   List<Widget> list=[];
 
   List<All> allList=[];
@@ -79,6 +84,17 @@ class _MomentPostState extends State<MomentPost> {
           userId=userList[0].userID;
         }
       });
+
+      checkToken().then((value){
+        setState(() {
+          tokenList= value;
+          print("Token length================="+tokenList.length.toString());
+          if(tokenList.length !=0){
+            userToken=tokenList[0].value;
+            print(userToken);
+          }
+        });
+      });
     });
   }
 
@@ -93,6 +109,12 @@ class _MomentPostState extends State<MomentPost> {
     focusNode.dispose();
   }
 
+  Future<List<Token>> checkToken() async{
+    Future<List<Token>> list=SQLiteDbProvider.db.getToken();
+    List<Token> tokenLists= await list;
+    return tokenLists;
+  }
+
   Future<List<User>> checkUser() async{
     Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
     List<User> userLists= await futureList;
@@ -101,9 +123,14 @@ class _MomentPostState extends State<MomentPost> {
 
   Future<String> uploadImage(List<Asset> assets) async{
     String link='';
+    String name='';
+    for(int i=0;i<assets.length;i++){
+      name=name+ assets[i].name;
+    }
+    print(name+ "=====File image====");
     var uploadUrl="http://localhost:3000//api/auth/multipleupload";
     var response= await http.post(uploadUrl,body: {
-      "files" : assets
+      "files" : name
     });
     if(response.statusCode == 200){
       var data=jsonDecode(response.body);
@@ -141,58 +168,83 @@ class _MomentPostState extends State<MomentPost> {
     ): Navigator.pop(context);
   }
 
-  newMomentPost(int user_id,int user_post_id,String caption,int like,String date) async{
+  newMomentPost(int user_id,int user_post_id,String caption,String image,int like) async{
     var insertUrl="http://192.168.0.110:3000//api/momentpost";
     var response=await http.post(insertUrl,body: {
       "Userid" : user_id.toString(),
       "Userpostid" : user_post_id.toString(),
       "Caption" : caption,
-      "Likecount" : like,
-      "Createdate" : date,
+      "Image" : image,
+      "Likecount" : like.toString(),
     });
     if(response.statusCode ==200){
       print("Your post has been uploaded");
+      progressDialog.hide();
+      showDialog(
+          context: context,
+        barrierDismissible: false,
+        builder: (BuildContext c){
+            return AlertDialog(
+              title: Text('Success'),
+              content: Text('Your post has been uploaded!'),
+              actions: <Widget>[
+                new FlatButton(
+                    onPressed: (){
+                      setState(() {
+                        Navigator.pop(c);
+                        Navigator.pop(context);
+                      });
+                    },
+                    child: Text('Ok')),
+              ],
+            );
+        }
+      );
     }
   }
 
-  uploadPost() async{
+  insertNewUserPost(String token) async{
+    var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
+        headers: {
+          'Authorization' : 'Bearer $token'
+        }
+    );
+    if(res.statusCode == 200){
+      var dataUser=jsonDecode(res.body);
+      //var userPost=dataUser['data']['user_post'];
+      int userPostId=dataUser['data']['user_post']['id'];
+      int id=dataUser['data']['user_post']['user_id'];
+      //var create_date=userPost['create_date'];
+      print(userPostId.toString() + "==@@@@@@@@@@" );
+      newMomentPost(id,userPostId,textEditingController.text,link,like);
+    }
+  }
+
+  uploadPost(String user_token) async{
     var userPostUrl="http://192.168.0.110:3000//api/userpost";
-    var response= await http.post(userPostUrl,body: {
-      "Userid" : userId,
-    });
+    var response= await http.get(userPostUrl,
+        headers: {
+          'Authorization' : 'Bearer $user_token'
+        });
     if(response.statusCode == 200){
       var data=jsonDecode(response.body);
       var token=data['data']['token'];
-      var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
-          headers: {
-            'Authorization' : 'Bearer $token'
-          }
-      );
-      if(res.statusCode == 200){
-        var dataUser=jsonDecode(res.body);
-        var userPost=dataUser['data']['user_post'];
-        var userPostId=userPost['id'];
-        var create_date=userPost['create_date'];
-        print(userPostId + "==" + userPost['user_id'] + "==" + userPost['create_date']);
-        newMomentPost(userId,userPostId,textEditingController.text,like,create_date);
-      }
+      insertNewUserPost(token);
     }
   }
 
   upload() async{
+    progressDialog.show();
     if(userId!=0){
       if(images.length !=0){
         uploadImage(images).then((value){
           setState(() {
             link=value;
+            print(link+" ========Image link==========");
           });
         });
-
-        uploadPost();
-
-      }else{
-        uploadPost();
       }
+      uploadPost(userToken);
     }else{
       print('Please log in or register to be able to post');
     }
@@ -200,6 +252,22 @@ class _MomentPostState extends State<MomentPost> {
 
   @override
   Widget build(BuildContext context) {
+    progressDialog = new ProgressDialog(context);
+    progressDialog.style(
+        message: 'Uploading...',
+        borderRadius: 10.0,
+        backgroundColor: Colors.white,
+        progressWidget: CircularProgressIndicator(),
+        elevation: 3.0,
+        insetAnimCurve: Curves.easeInCirc,
+        progress: 0.0,
+        maxProgress: 10.0,
+        progressTextStyle: TextStyle(
+            color: Colors.black, fontSize: 1.0, fontWeight: FontWeight.w400),
+        messageTextStyle: TextStyle(
+            color: Colors.black, fontSize: 10.0, fontWeight: FontWeight.bold)
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Moment Post'),
@@ -242,6 +310,18 @@ class _MomentPostState extends State<MomentPost> {
                                 ),
                                 onChanged: (value){
                                   (value.trim()!=null && value.length>=5)? isWritingTo(true) : isWritingTo(false);
+                                },
+                                onTap: (){
+                                  setState(() {
+                                    if(isShowSticker){
+                                      hideStickerContainer();
+                                      isShowSticker=false;
+                                    }else{
+                                      showKeyboard();
+                                      isShowKeyboard=true;
+                                    }
+                                  });
+
                                 },
                               ),
                             ),
@@ -360,7 +440,7 @@ class _MomentPostState extends State<MomentPost> {
         print(emoji);
         setState(() {
           isWriting=true;
-          //_textEditingController.text=_textEditingController.text+emoji.emoji;
+          textEditingController.text=textEditingController.text+emoji.emoji;
         });
       },
     );
@@ -473,17 +553,29 @@ class _MomentPostState extends State<MomentPost> {
                     child: new Container(
                       padding: EdgeInsets.only(right: 10.0),
                       child: new IconButton(
-                        icon: new Icon(Icons.insert_emoticon),
+                        icon: new Icon(Icons.insert_emoticon, color: isShowSticker? Colors.blue : Colors.blueGrey,),
                         onPressed: () {
                           setState(() {
                              if(isShowKeyboard){
                                hideKeyboard();
                                showStickerContainer();
+                               isShowSticker=true;
                                isShowKeyboard=false;
+                               focusNode.unfocus();
                              }else{
                                showKeyboard();
                                hideStickerContainer();
+                               isShowSticker=false;
                                isShowKeyboard=true;
+//                               if(focusNode.hasFocus){
+//                                 isShowSticker=false;
+//                               }
+                             }
+                             if(focusNode.hasFocus){
+                               hideKeyboard();
+                               showStickerContainer();
+                               isShowSticker=true;
+                               focusNode.unfocus();
                              }
                           });
                         },

@@ -106,7 +106,7 @@ class _IntroScreenState extends State<IntroScreen> {
         title: 'News Info',
         description: "Acknowledge and read information posted by people",
         pathImage: "assets/news.png",
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: Colors.blueGrey,
       ),
     );
 

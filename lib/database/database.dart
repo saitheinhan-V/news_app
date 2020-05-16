@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:news/models/follow.dart';
 import 'package:news/models/following.dart';
+import 'package:news/models/token.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -41,6 +42,12 @@ class SQLiteDbProvider {
               "userID INTEGER,"
               "followerID INTEGER,"
               "followDate DATETIME"
+              ")"
+          );
+
+          await db.execute("CREATE TABLE Token ("
+            "id INTEGER PRIMARY KEY,"
+              "value TEXT"
               ")"
           );
 
@@ -102,6 +109,17 @@ class SQLiteDbProvider {
 
   }
 
+  Future<List<Token>> getToken() async{
+    final db = await database;
+    List<Map> results= await db.query("Token", columns: Token.columns);
+    List<Token> tokens= new List();
+    results.forEach((result){
+      Token token = Token.fromMap(result);
+      tokens.add(token);
+    });
+    return tokens;
+  }
+
 
 //  Future<Product> getProductById(int id) async {
 //    final db = await database;
@@ -138,6 +156,14 @@ class SQLiteDbProvider {
     return result;
   }
 
+  insertToken(String token) async{
+    final db = await database;
+    var result = await db.rawInsert(
+      "INSERT Into Token (id, value) VALUES (?, ?)", [ 1, token]
+    );
+    return result;
+  }
+
   deleteFollower() async{
     final db= await database;
     db.delete("Follow");
@@ -146,6 +172,11 @@ class SQLiteDbProvider {
   deleteFollowing() async{
     final db = await database;
     db.delete("Following");
+  }
+
+  deleteToken() async{
+    final db= await database;
+    db.delete("Token");
   }
 
 
