@@ -12,17 +12,14 @@ class ArticlePost extends StatefulWidget {
 }
 
 class _ArticlePostState extends State<ArticlePost> {
-
-  FocusNode _focusNode= FocusNode();
-  FocusNode focusNode=FocusNode();
+  FocusNode _focusNode = FocusNode();
+  FocusNode focusNode = FocusNode();
   ZefyrController _controller;
-  TextEditingController textEditingController=TextEditingController();
-  bool isWriting=false;
-
+  TextEditingController textEditingController = TextEditingController();
+  bool isWriting = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     //final document = _loadDocument();
     //_controller = ZefyrController(document);
@@ -34,18 +31,16 @@ class _ArticlePostState extends State<ArticlePost> {
     });
   }
 
-
   isWritingTo(bool val) {
     setState(() {
-      isWriting=val;
+      isWriting = val;
     });
   }
-
 
   void _saveDocument(BuildContext context) {
     // Notus documents can be easily serialized to JSON by passing to
     // `jsonEncode` directly
-    print("Encode=="+_controller.document.toString());
+    print("Encode==" + _controller.document.toString());
     final contents = jsonEncode(_controller.document);
     // For this example we save our document to a temporary file.
     final file = File(Directory.systemTemp.path + "/quick_start.json");
@@ -53,117 +48,124 @@ class _ArticlePostState extends State<ArticlePost> {
     file.writeAsString(contents).then((_) {
       Scaffold.of(context).showSnackBar(SnackBar(content: Text("Saved.")));
     });
-    print("Document==="+contents);
+    print("Document===" + contents);
   }
 
-  Future<bool> onBackPressed(){
-    return _controller!=null? showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext c){
-          return AlertDialog(
-            title: Text('Warning'),
-            content: Text('Are you sure want to exit!'),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: (){
-                  Navigator.pop(c);
-                },
-                child: Text('No'),
-              ),
-              new FlatButton(
-                onPressed: (){
-                  focusNode.unfocus();
-                  _focusNode.unfocus();
-                  Navigator.pop(c);
-                  Navigator.pop(context);
-                },
-                child: Text('Yes'),
-              ),
-            ],
-          );
-        }
-    ): Navigator.pop(context);
+  Future<bool> onBackPressed() {
+    return _controller != null
+        ? showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext c) {
+              return AlertDialog(
+                title: Text('Warning'),
+                content: Text('Are you sure want to exit!'),
+                actions: <Widget>[
+                  new FlatButton(
+                    onPressed: () {
+                      Navigator.pop(c);
+                    },
+                    child: Text('No'),
+                  ),
+                  new FlatButton(
+                    onPressed: () {
+                      focusNode.unfocus();
+                      _focusNode.unfocus();
+                      Navigator.pop(c);
+                      Navigator.pop(context);
+                    },
+                    child: Text('Yes'),
+                  ),
+                ],
+              );
+            })
+        : Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text('Article'),
         actions: <Widget>[
-          (isWriting && _controller!=null)? FlatButton(
-            child: Text('Post',style: TextStyle(
-                color: Colors.white,fontSize: 20.0
-            ),),
-          ) : Container(),
+          (isWriting && _controller != null)
+              ? FlatButton(
+                  child: Text(
+                    'Post',
+                    style: TextStyle(color: Colors.white, fontSize: 20.0),
+                  ),
+                )
+              : Container(),
         ],
       ),
       body: WillPopScope(
-          onWillPop: onBackPressed,
-            child: ZefyrScaffold(
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                        padding: EdgeInsets.only(left: 10.0,right: 10.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: TextField(
-                          autofocus: true,
-                          controller: textEditingController,
-                          focusNode: focusNode,
-                          maxLines: null,
-                          maxLength: 50,
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            hintText: 'Enter Caption... (min 5 ~ max 30)',
-                            focusedBorder: InputBorder.none,
-                            border: InputBorder.none,
-                          ),
-                          onChanged: (value){
-                            (value.trim()!=null && value.length>=5)? isWritingTo(true) : isWritingTo(false);
-                          },
-                        ),
-                      ),
-                    Container(padding: EdgeInsets.only(left: 10.0,right: 10.0),
-                      child: Container(
-                        height: 1.0,color: Colors.grey,
-                      ),
+        onWillPop: onBackPressed,
+        child: ZefyrScaffold(
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            child: Column(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(left: 10.0, right: 10.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: TextField(
+                    autofocus: true,
+                    controller: textEditingController,
+                    focusNode: focusNode,
+                    maxLines: null,
+                    maxLength: 50,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Caption... (min 5 ~ max 30)',
+                      focusedBorder: InputBorder.none,
+                      border: InputBorder.none,
                     ),
-                    Flexible(
-                      child: Container(
-                        //height: MediaQuery.of(context).size.height*(50/100),
-                        child: new ZefyrEditor(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          autofocus: false,
-                          imageDelegate: MyAppZefyrImageDelegate(),
-                        ),
-                      ),
-                    ),
-                  ],
+                    onChanged: (value) {
+                      (value.trim() != null && value.length >= 5)
+                          ? isWritingTo(true)
+                          : isWritingTo(false);
+                    },
+                  ),
                 ),
-              ),
+                Container(
+                  padding: EdgeInsets.only(left: 10.0, right: 10.0),
+                  child: Container(
+                    height: 1.0,
+                    color: Colors.grey,
+                  ),
+                ),
+                Flexible(
+                  child: Container(
+                    //height: MediaQuery.of(context).size.height*(50/100),
+                    child: new ZefyrEditor(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      autofocus: false,
+                      imageDelegate: MyAppZefyrImageDelegate(),
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
         ),
+      ),
     );
   }
 
   /// Loads the document to be edited in Zefyr.
-  Future<NotusDocument> _loadDocument() async{
+  Future<NotusDocument> _loadDocument() async {
     // For simplicity we hardcode a simple document with one line of text
     // saying "Zefyr Quick Start".
     // (Note that delta must always end with newline.)
     //final Delta delta = Delta()..insert("Zefyr Quick Start\n");
-   // return NotusDocument.fromDelta(delta);
+    // return NotusDocument.fromDelta(delta);
     final file = File(Directory.systemTemp.path + "/quick_start.json");
     if (await file.exists()) {
-    final contents = await file.readAsString();
-    return NotusDocument.fromJson(jsonDecode(contents));
+      final contents = await file.readAsString();
+      return NotusDocument.fromJson(jsonDecode(contents));
     }
     final Delta delta = Delta()..insert("Enter your content...\n");
     return NotusDocument.fromDelta(delta);
@@ -177,8 +179,6 @@ class _ArticlePostState extends State<ArticlePost> {
     _controller.dispose();
     textEditingController.dispose();
   }
-
-
 }
 
 class MyAppZefyrImageDelegate implements ZefyrImageDelegate<ImageSource> {
@@ -193,13 +193,17 @@ class MyAppZefyrImageDelegate implements ZefyrImageDelegate<ImageSource> {
   @override
   Widget buildImage(BuildContext context, String key) {
     final file = File.fromUri(Uri.parse(key));
+
     /// Create standard [FileImage] provider. If [key] was an HTTP link
     /// we could use [NetworkImage] instead.
     final image = FileImage(file);
     return Container(
       width: 200.0,
       height: MediaQuery.of(context).size.width,
-      child: Image.file(file,fit: BoxFit.cover,),
+      child: Image.file(
+        file,
+        fit: BoxFit.cover,
+      ),
     );
   }
 
@@ -209,5 +213,3 @@ class MyAppZefyrImageDelegate implements ZefyrImageDelegate<ImageSource> {
   @override
   ImageSource get gallerySource => ImageSource.gallery;
 }
-
-

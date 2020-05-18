@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:news/models/category.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/models/following.dart';
 import 'package:news/models/token.dart';
@@ -14,71 +15,68 @@ class SQLiteDbProvider {
   static Database _database;
 
   Future<Database> get database async {
-    if (_database != null)
-      return _database;
+    if (_database != null) return _database;
     _database = await initDB();
     return _database;
   }
 
   initDB() async {
-
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "News.db");
-    return await openDatabase(
-        path,
-        version: 1,
-        onOpen: (db) {},
+    return await openDatabase(path, version: 1, onOpen: (db) {},
         onCreate: (Database db, int version) async {
-          await db.execute("CREATE TABLE User ("
-              "userID INTEGER PRIMARY KEY,"
-              "userName TEXT,"
-              "password TEXT,"
-              "phone TEXT"
-              ")"
-          );
+      await db.execute("CREATE TABLE User ("
+          "userID INTEGER PRIMARY KEY,"
+          "userName TEXT,"
+          "password TEXT,"
+          "phone TEXT"
+          ")");
 
-          await db.execute("CREATE TABLE Follow ("
-              "followID INTEGER,"
-              "userID INTEGER,"
-              "followerID INTEGER,"
-              "followDate DATETIME"
-              ")"
-          );
+      await db.execute("CREATE TABLE Follow ("
+          "followID INTEGER,"
+          "userID INTEGER,"
+          "followerID INTEGER,"
+          "followDate DATETIME"
+          ")");
 
-          await db.execute("CREATE TABLE Token ("
-            "id INTEGER PRIMARY KEY,"
-              "value TEXT"
-              ")"
-          );
+      await db.execute("CREATE TABLE Category ("
+          "categoryID INTEGER PRIMARY KEY, "
+          "categoryName TEXT, "
+          "categoryOrder INTEGER "
+          ")");
 
-          await db.execute("CREATE TABLE Following ("
-              "userID INTEGER,"
-              "userName TEXT,"
-              "phone TEXT,"
-              "password TEXT,"
-              "createDate TEXT,"
-              "profilePic TEXT,"
-              "IMEI TEXT,"
-              "QQ TEXT,"
-              "sex int,"
-              "email TEXT,"
-              "address TEXT,"
-              "birthday TEXT,"
-              "introduction TEXT"
-              ")"
-          );
+      await db.execute("CREATE TABLE Token ("
+          "id INTEGER PRIMARY KEY,"
+          "value TEXT "
+          ")");
 
-          //db.execute("insert into quotes (quote, author) values ('Be happy in the moment, that’s enough. Each moment is all we need, not more.', 'Mother Teresa')");
-          // db.execute("insert into quotes (quote, author) values ('Be here now', 'Ram Dass')");
+      await db.execute("CREATE TABLE Following ("
+          "userID INTEGER,"
+          "userName TEXT,"
+          "phone TEXT,"
+          "password TEXT,"
+          "createDate TEXT,"
+          "profilePic TEXT,"
+          "IMEI TEXT,"
+          "QQ TEXT,"
+          "sex int,"
+          "email TEXT,"
+          "address TEXT,"
+          "birthday TEXT,"
+          "introduction TEXT"
+          ")");
 
-          //await db.execute("INSERT INTO User ('userID', 'userName', 'password', 'phone') values( 1, 'SSS', '100100','100100')");
-         // await db.execute("INSERT INTO User ('userID', 'userName', 'password', 'phone') values( 2, 'S', '100','100')");
-          //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)",[2, "Pixel", "Pixel is the most feature phone ever", 800,"pixel.png"]);
-          //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [3, "Laptop", "Laptop is most productive development tool", 2000, "laptop.jpg"]);
-          //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [4, "Tablet", "Laptop is most productive development tool", 1500, "tablet.png"]);
-         // await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [5, "Pendrive", "Pendrive is useful storage medium", 100, "pendrive.jpeg"]);
-         // await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)",[6, "Floppy Drive", "Floppy drive is useful rescue storagemedium", 20, "floppy.jpeg"]);
-        });
+      //db.execute("insert into quotes (quote, author) values ('Be happy in the moment, that’s enough. Each moment is all we need, not more.', 'Mother Teresa')");
+      // db.execute("insert into quotes (quote, author) values ('Be here now', 'Ram Dass')");
+
+      //await db.execute("INSERT INTO User ('userID', 'userName', 'password', 'phone') values( 1, 'SSS', '100100','100100')");
+      // await db.execute("INSERT INTO User ('userID', 'userName', 'password', 'phone') values( 2, 'S', '100','100')");
+      //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)",[2, "Pixel", "Pixel is the most feature phone ever", 800,"pixel.png"]);
+      //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [3, "Laptop", "Laptop is most productive development tool", 2000, "laptop.jpg"]);
+      //await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [4, "Tablet", "Laptop is most productive development tool", 1500, "tablet.png"]);
+      // await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)", [5, "Pendrive", "Pendrive is useful storage medium", 100, "pendrive.jpeg"]);
+      // await db.execute("INSERT INTO Product ('id', 'name', 'description', 'price','image') values (?, ?, ?, ?, ?)",[6, "Floppy Drive", "Floppy drive is useful rescue storagemedium", 20, "floppy.jpeg"]);
+    });
   }
 
   Future<List<User>> getUser() async {
@@ -93,33 +91,42 @@ class SQLiteDbProvider {
     return users;
   }
 
-  Future<List<Follow>> getFollower() async{
+  Future<List<Follow>> getFollower() async {
     final db = await database;
-    List<Map> results= await db.query("Follow", columns: Follow.columns);
-    List<Follow> follows= new List();
-    results.forEach((result){
+    List<Map> results = await db.query("Follow", columns: Follow.columns);
+    List<Follow> follows = new List();
+    results.forEach((result) {
       Follow follow = Follow.fromMap(result);
       follows.add(follow);
     });
     return follows;
   }
 
-  Future<List<Following>> getFollowing() async{
+  Future<List<Following>> getFollowing() async {
     final db = await database;
-
   }
 
-  Future<List<Token>> getToken() async{
+  Future<List<Token>> getToken() async {
     final db = await database;
-    List<Map> results= await db.query("Token", columns: Token.columns);
-    List<Token> tokens= new List();
-    results.forEach((result){
+    List<Map> results = await db.query("Token", columns: Token.columns);
+    List<Token> tokens = new List();
+    results.forEach((result) {
       Token token = Token.fromMap(result);
       tokens.add(token);
     });
     return tokens;
   }
 
+  Future<List<Category>> getCategory() async {
+    final db = await database;
+    List<Map> results = await db.query("Category", columns: Category.columns);
+    List<Category> categorys = new List();
+    results.forEach((result) {
+      Category category = Category.fromMap(result);
+      categorys.add(category);
+    });
+    return categorys;
+  }
 
 //  Future<Product> getProductById(int id) async {
 //    final db = await database;
@@ -128,57 +135,81 @@ class SQLiteDbProvider {
 //    return result.isNotEmpty ? Product.fromMap(result.first) : Null;
 //  }
 
-
   insert(User user) async {
     final db = await database;
     //var maxIdResult = await db.rawQuery("SELECT MAX(id)+1 as last_inserted_id FROM User");
     //var id = maxIdResult.first["last_inserted_id"];
     var result = await db.rawInsert(
-        "INSERT Into User (userID, userName, password, phone) VALUES (?, ?, ?, ?)", [user.userID, user.userName, user.password, user.phone]);
+        "INSERT Into User (userID, userName, password, phone) VALUES (?, ?, ?, ?)",
+        [user.userID, user.userName, user.password, user.phone]);
     return result;
   }
 
-  insertFollower(Follow follow) async{
+  insertFollower(Follow follow) async {
     final db = await database;
     var result = await db.rawInsert(
-      "INSERT Into Follow (followID, userID, followerID, followDate) VALUES (?, ?, ?, ?)", [follow.followID, follow.userID, follow.followerID, follow.followDate]
-    );
+        "INSERT Into Follow (followID, userID, followerID, followDate) VALUES (?, ?, ?, ?)",
+        [follow.followID, follow.userID, follow.followerID, follow.followDate]);
     return result;
   }
 
-  insertFollowing(Following following) async{
-    final db = await database;
-    var result= await db.rawInsert(
-      "INSERT Into Following (userID, userName, phone, password, createDate, profilePic, IMEI, QQ, sex, email, address, birthday, introduction) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-      [following.userID,following.userName,following.phone,following.password,following.createDate,following.profilePic,following.IMEI,following.QQ,
-      following.sex,following.email,following.address,following.birthday,following.introduction]
-    );
-    return result;
-  }
-
-  insertToken(String token) async{
+  insertCategory(Category category) async {
     final db = await database;
     var result = await db.rawInsert(
-      "INSERT Into Token (id, value) VALUES (?, ?)", [ 1, token]
-    );
+        "INSERT Into Category (categoryID, categoryName,categoryOrder) VALUES ( ?, ?, ?)",
+        [category.categoryID, category.categoryName, category.categoryOrder]);
     return result;
   }
 
-  deleteFollower() async{
-    final db= await database;
+  insertFollowing(Following following) async {
+    final db = await database;
+    var result = await db.rawInsert(
+        "INSERT Into Following (userID, userName, phone, password, createDate, profilePic, IMEI, QQ, sex, email, address, birthday, introduction) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [
+          following.userID,
+          following.userName,
+          following.phone,
+          following.password,
+          following.createDate,
+          following.profilePic,
+          following.IMEI,
+          following.QQ,
+          following.sex,
+          following.email,
+          following.address,
+          following.birthday,
+          following.introduction
+        ]);
+    return result;
+  }
+
+  insertToken(String token) async {
+    final db = await database;
+    var result = await db
+        .rawInsert("INSERT Into Token (id, value) VALUES (?, ?)", [1, token]);
+    return result;
+  }
+  //category
+
+  deleteFollower() async {
+    final db = await database;
     db.delete("Follow");
   }
 
-  deleteFollowing() async{
+  deleCategory() async {
+    final db = await database;
+    db.delete("Category");
+  }
+
+  deleteFollowing() async {
     final db = await database;
     db.delete("Following");
   }
 
-  deleteToken() async{
-    final db= await database;
+  deleteToken() async {
+    final db = await database;
     db.delete("Token");
   }
-
 
 //  update(Product product) async {
 //    final db = await database;
@@ -187,21 +218,13 @@ class SQLiteDbProvider {
 //    return result;
 //  }
 
-
 //  delete(int id) async {
 //    final db = await database;
 //    db.delete("Product", where: "id = ?", whereArgs: [id]);
 //  }
 
-delete() async{
-    final db= await database;
+  delete() async {
+    final db = await database;
     db.delete("User");
+  }
 }
-
-}
-
-
-
-
-
-

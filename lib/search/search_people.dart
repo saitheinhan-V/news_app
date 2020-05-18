@@ -6,26 +6,22 @@ class CustomSearchPeople extends StatefulWidget {
   _CustomSearchPeopleState createState() => _CustomSearchPeopleState();
 }
 
-class _CustomSearchPeopleState extends State<CustomSearchPeople>{
-
-  FocusNode focusNode=FocusNode();
-  TextEditingController textEditingController=TextEditingController();
-  bool isWriting=false;
+class _CustomSearchPeopleState extends State<CustomSearchPeople> {
+  FocusNode focusNode = FocusNode();
+  TextEditingController textEditingController = TextEditingController();
+  bool isWriting = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     focusNode.dispose();
     textEditingController.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -34,39 +30,43 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: Colors.grey),
         title: GestureDetector(
-          onTap: () => showSearch(context: context, delegate: SearchPeople(hintText: 'Search for People...')),
+          onTap: () => showSearch(
+              context: context,
+              delegate: SearchPeople(hintText: 'Search for People...')),
           child: new Container(
-            //width: 300.0,
-            height: 50.0,
-            //padding: EdgeInsets.only(left: 10.0),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white,
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(10.0),
-              color: Colors.white,
-            ),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text('Search for People...',
-                  style: TextStyle(
-                    color: Colors.black54,
-                    //fontWeight: FontWeight.bold,
-                    fontSize: 20.0,
-                  ),
-                  ),
+              //width: 300.0,
+              height: 50.0,
+              //padding: EdgeInsets.only(left: 10.0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white,
+                  width: 2.0,
                 ),
-              ],
-            )
-          ),
+                borderRadius: BorderRadius.circular(10.0),
+                color: Colors.white,
+              ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      'Search for People...',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                  ),
+                ],
+              )),
         ),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: SearchPeople(hintText: 'Search for People...'));
+              showSearch(
+                  context: context,
+                  delegate: SearchPeople(hintText: 'Search for People...'));
             },
           ),
         ],
@@ -113,24 +113,23 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
 
   isWritingTo(bool param0) {
     setState(() {
-      isWriting=param0;
+      isWriting = param0;
     });
   }
 
-  Container _recentSearch(){
+  Container _recentSearch() {
     return Container(
       height: 100.0,
       child: Column(
-        children: <Widget>[
-        ],
+        children: <Widget>[],
       ),
     );
   }
 
-  Container _recommendProfile(){
+  Container _recommendProfile() {
     return Container(
       height: 250.0,
-      padding: EdgeInsets.only(top: 10.0,left: 10.0,right: 10.0),
+      padding: EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0),
       child: Column(
         children: <Widget>[
           Row(
@@ -141,10 +140,9 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Text('Recommend',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold
-                    ),
+                    Text(
+                      'Recommend',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -164,19 +162,20 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
           Container(
             height: 220.0,
             child: ListView.builder(
-              primary: false,
-              itemCount: 4,
-                itemBuilder: (BuildContext context,int index){
+                primary: false,
+                itemCount: 4,
+                itemBuilder: (BuildContext context, int index) {
                   return Container(
                     height: 50.0,
                     width: MediaQuery.of(context).size.width,
                     //padding: EdgeInsets.only(top: 5.0,bottom: 5.0),
                     child: ListTile(
                       title: Text('Sai Thein Han'),
-                      subtitle: Text('1k Followers',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                      ),
+                      subtitle: Text(
+                        '1k Followers',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                        ),
                       ),
                       leading: Container(
                         height: 40.0,
@@ -207,14 +206,18 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(100.0),
                                 ),
-                                child: Icon(Icons.add,
-                                  color: Colors.blue,size: 12.0,),
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.blue,
+                                  size: 12.0,
+                                ),
                               ),
-                              Text('Follow',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.0,
-                              ),
+                              Text(
+                                'Follow',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.0,
+                                ),
                               ),
                             ],
                           ),
@@ -228,25 +231,56 @@ class _CustomSearchPeopleState extends State<CustomSearchPeople>{
       ),
     );
   }
-
 }
 
-
 class SearchPeople extends SearchDelegate<String> {
-  String hintText='Search for People';
-  SearchPeople({this.hintText}):
-        super(searchFieldLabel: hintText,keyboardType: TextInputType.text,textInputAction: TextInputAction.search,);
+  String hintText = 'Search for People';
+  SearchPeople({this.hintText})
+      : super(
+          searchFieldLabel: hintText,
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.search,
+        );
 
-
-
-  final cities=[
-    'Myanmar','Malaysia','Singapore','Vietnam','Burma','Australia',
-    'America','Burma','Hungary','Holland','Zambia','Thailand','Tanzania','Japan','Korea','Cambodia',
-    'Cameron','China','Denmark','Egypt','England','Finland','France','Greece','Italy','Portugal',
-    'Russia','Switzerland','Netherland','USA',
+  final cities = [
+    'Myanmar',
+    'Malaysia',
+    'Singapore',
+    'Vietnam',
+    'Burma',
+    'Australia',
+    'America',
+    'Burma',
+    'Hungary',
+    'Holland',
+    'Zambia',
+    'Thailand',
+    'Tanzania',
+    'Japan',
+    'Korea',
+    'Cambodia',
+    'Cameron',
+    'China',
+    'Denmark',
+    'Egypt',
+    'England',
+    'Finland',
+    'France',
+    'Greece',
+    'Italy',
+    'Portugal',
+    'Russia',
+    'Switzerland',
+    'Netherland',
+    'USA',
   ];
-  final recentCities=[
-    'Myanmar','Malaysia','Singapore','Vietnam','Burma','Australia',
+  final recentCities = [
+    'Myanmar',
+    'Malaysia',
+    'Singapore',
+    'Vietnam',
+    'Burma',
+    'Australia',
   ];
 
   bool hasQuery;
@@ -254,32 +288,37 @@ class SearchPeople extends SearchDelegate<String> {
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
-      query.isNotEmpty?
-      Container(
-        width: 20.0,
-        child: GestureDetector(
-          child: Container(
-            width: 20.0,
-            decoration: BoxDecoration(
-              color: Colors.black26,
-              borderRadius: BorderRadius.circular(100.0),
-            ),
-            margin: EdgeInsets.only(top: 18.0,bottom: 18.0),
-            child: Center(
-              child: Icon(Icons.clear,size: 15.0,color: Colors.white,),
-            ),
-          ),
-          onTap: (){
-            query= '';
-            hasQuery=false;
-          },
-        ),
-      ) : Container(),
+      query.isNotEmpty
+          ? Container(
+              width: 20.0,
+              child: GestureDetector(
+                child: Container(
+                  width: 20.0,
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(100.0),
+                  ),
+                  margin: EdgeInsets.only(top: 18.0, bottom: 18.0),
+                  child: Center(
+                    child: Icon(
+                      Icons.clear,
+                      size: 15.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  query = '';
+                  hasQuery = false;
+                },
+              ),
+            )
+          : Container(),
       IconButton(
         icon: Icon(Icons.search),
         onPressed: () {
           query = '';
-          hasQuery=false;
+          hasQuery = false;
         },
       ),
     ];
@@ -297,35 +336,38 @@ class SearchPeople extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return hasQuery? Container(
-      width: 100.0,
-      height: 100.0,
-      color: Colors.red,
-      child: Center(
-        child: Text(query),
-      ),
-    ): Container(
-      child: Column(
-        children: <Widget>[
-          Container(
+    return hasQuery
+        ? Container(
+            width: 100.0,
             height: 100.0,
+            color: Colors.red,
             child: Center(
-              child: Text('recent search'),
+              child: Text(query),
             ),
-          ),
-        ],
-      ),
-    );
+          )
+        : Container(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  height: 100.0,
+                  child: Center(
+                    child: Text('recent search'),
+                  ),
+                ),
+              ],
+            ),
+          );
   }
-
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final suggestionList = query.isEmpty? recentCities: cities.where((p) => p.startsWith(query)).toList();
+    final suggestionList = query.isEmpty
+        ? recentCities
+        : cities.where((p) => p.startsWith(query)).toList();
 
     return Container(
       height: MediaQuery.of(context).size.height,
-          /*child: ListView.builder(
+      /*child: ListView.builder(
             itemCount: suggestionList.length,
             itemBuilder: (BuildContext context,int index){
               return ListTile(
@@ -372,5 +414,4 @@ class SearchPeople extends SearchDelegate<String> {
       primaryTextTheme: theme.textTheme,
     );
   }
-
 }

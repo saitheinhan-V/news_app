@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:news/models/user.dart';
 import 'package:news/database/database.dart';
-import 'package:dio/dio.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -32,21 +31,20 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            SizedBox(height: 20.0,),
+            SizedBox(
+              height: 20.0,
+            ),
             Container(
               padding: EdgeInsets.all(25.0),
               child: RegisterFormDemo(),
             ),
-            Container(
-                child: GoToLoginPage()
-            ),
+            Container(child: GoToLoginPage()),
           ],
         ),
       ),
     );
   }
 }
-
 
 class AppBarDemo extends StatelessWidget {
   @override
@@ -103,16 +101,15 @@ class RegisterFormDemo extends StatefulWidget {
 
 class _RegisterFormDemoState extends State<RegisterFormDemo> {
   final registerFormKey = GlobalKey<FormState>();
-  String userName,password,phone;
-  int userID=0;
-  String iMEI='00000000';
+  String userName, password, phone;
+  int userID = 0;
+  String iMEI = '00000000';
   bool autoValidate = false;
-  TextEditingController nameController=TextEditingController();
-  TextEditingController phoneController=TextEditingController();
-  TextEditingController passwordController=TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   ProgressDialog pr;
-  var baseUrl="http://192.168.0.110:8081/user";
-
+  var baseUrl = "http://192.168.0.110:8081/user";
 
   void submitRegisterForm() {
     if (registerFormKey.currentState.validate()) {
@@ -126,7 +123,8 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 
       //Navigator.pushNamed(context, '/login');
       setState(() {
-        _signUp(nameController.text,phoneController.text,passwordController.text);
+        _signUp(
+            nameController.text, phoneController.text, passwordController.text);
       });
     } else {
       setState(() {
@@ -135,57 +133,57 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     }
   }
 
-  Future<List> checkUser(String text1,String text2,String text3) async{
-    var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
-    var response= await http.post(loginUrl,body: {
-      "phone" : text2,
-      "password" : text3,
+  Future<List> checkUser(String text1, String text2, String text3) async {
+    var loginUrl = 'https://firstgitlesson.000webhostapp.com/account_login.php';
+    var response = await http.post(loginUrl, body: {
+      "phone": text2,
+      "password": text3,
     });
-    var data=jsonDecode(response.body);
+    var data = jsonDecode(response.body);
     return data;
   }
 
-  insertFollower(int id) async{
-    var response=await http.post(baseUrl+"/"+id.toString());
-    var data=jsonDecode(response.body);
-    print('Data Length===='+data.length.toString());
+  insertFollower(int id) async {
+    var response = await http.post(baseUrl + "/" + id.toString());
+    var data = jsonDecode(response.body);
+    print('Data Length====' + data.length.toString());
     SQLiteDbProvider.db.deleteFollower();
-    for(int j=0;j<data.length;j++){
+    for (int j = 0; j < data.length; j++) {
       //User user=User(j,'null','000','000');
-      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+      Follow follow = new Follow(data[j]['Followid'], data[j]['Userid'],
+          data[j]['Followerid'], data[j]['Followdate']);
       SQLiteDbProvider.db.insertFollower(follow);
     }
   }
 
-  Future<List<User>> getUser(String ph,String pw) async{
-    List<User> userLists=List<User>();
-    var res= await http.post(baseUrl+"/"+ph+"/"+pw);
-    if(res.statusCode == 200){
-      var data=jsonDecode(res.body);
-      if(data.length !=0){
-        User user=User(data['Userid'],data['Username'],data['Password'],data['Phone']);
+  Future<List<User>> getUser(String ph, String pw) async {
+    List<User> userLists = List<User>();
+    var res = await http.post(baseUrl + "/" + ph + "/" + pw);
+    if (res.statusCode == 200) {
+      var data = jsonDecode(res.body);
+      if (data.length != 0) {
+        User user = User(
+            data['Userid'], data['Username'], data['Password'], data['Phone']);
         userLists.add(user);
       }
     }
     return userLists;
   }
 
-  Future<User> _getUserInfo(String token) async{
-    var authorizeUrl="http://192.168.0.110:3000//api/auth/info";
+  Future<User> _getUserInfo(String token) async {
+    var authorizeUrl = "http://10.0.2.2:3000/api/auth/info";
 
-    var response=await http.get(authorizeUrl,headers: {
-      'Authorization' : 'Bearer $token'
-    });
-    var dataUser=jsonDecode(response.body);
-    Map userMap=dataUser['data']['user'];
-    User user=User.fromJson(userMap);
-    print("Name===="+user.userName);
+    var response = await http
+        .get(authorizeUrl, headers: {'Authorization': 'Bearer $token'});
+    var dataUser = jsonDecode(response.body);
+    Map userMap = dataUser['data']['user'];
+    User user = User.fromJson(userMap);
+    print("Name====" + user.userName);
     return user;
-
   }
 
-  _signUp(String name, String phoneNo, String passWord) async{
-    var registerUrl="http://192.168.0.110:3000//api/auth/register";
+  _signUp(String name, String phoneNo, String passWord) async {
+    var registerUrl = "http://10.0.2.2:3000/api/auth/register";
 
 //    List<User> usersData= await getUser(phoneNo, passWord);
 //    User users=usersData[0];
@@ -209,31 +207,31 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 //        }
 //      }
 
-    var res= await http.post(registerUrl,body: {
-      "Username" : name,
-      "Phone" : phoneNo,
-      "Password" : passWord,
+    var res = await http.post(registerUrl, body: {
+      "Username": name,
+      "Phone": phoneNo,
+      "Password": passWord,
     });
-    print("Code==="+res.statusCode.toString());
-    print("Data=="+res.body.toString());
-    var data=jsonDecode(res.body);
-    var code=data['code'];
-    var msg=data['msg'];
+    print("Code===" + res.statusCode.toString());
+    print("Data==" + res.body.toString());
+    var data = jsonDecode(res.body);
+    var code = data['code'];
+    var msg = data['msg'];
     var token;
-    if(code == 200){
-      token=data['data']['token'];
-      if(token !=null){
+    if (code == 200) {
+      token = data['data']['token'];
+      if (token != null) {
         SQLiteDbProvider.db.deleteToken();
         SQLiteDbProvider.db.insertToken(token);
-        User user= await _getUserInfo(token);
+        User user = await _getUserInfo(token);
         //insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
-        Navigator.pop(context , user);
+        Navigator.pop(context, user);
       }
     }
-    print(msg +"==="+ token);
-      //progressDialog.hide();
+    print(msg + "===" + token);
+    //progressDialog.hide();
     //pr.show();
     //var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
     //var selectUrl='https://firstgitlesson.000webhostapp.com/select.php';
@@ -273,7 +271,6 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 //      print('11111111111111');
 //      print('Already Registered');
 //    }
-
   }
 
   String validateUsername(value) {
@@ -299,7 +296,6 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 
   @override
   Widget build(BuildContext context) {
-
     return Form(
       key: registerFormKey,
       child: Column(
@@ -426,8 +422,7 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
               color: Colors.blue,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15.0),
-                  side: BorderSide(color: Colors.blue)
-              ),
+                  side: BorderSide(color: Colors.blue)),
               child: Text(
                 'Register',
                 style: TextStyle(
@@ -438,7 +433,7 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
                 ),
               ),
               elevation: 0.0,
-              onPressed: (){
+              onPressed: () {
                 setState(() {
                   submitRegisterForm();
                 });
@@ -452,7 +447,6 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
       ),
     );
   }
-
 }
 
 class GoToLoginPage extends StatelessWidget {
@@ -469,18 +463,19 @@ class GoToLoginPage extends StatelessWidget {
           height: 10.0,
         ),
         FlatButton(
-          child:  Text(
+          child: Text(
             '去登陆',
             style: TextStyle(
                 fontSize: 20.0,
                 fontWeight: FontWeight.w500,
                 color: Colors.blueAccent),
           ),
-          onPressed: () { Navigator.pushNamed(context, "/login");},
+          onPressed: () {
+            Navigator.pushNamed(context, "/login");
+          },
           splashColor: Colors.transparent,
         ),
       ],
     );
   }
 }
-

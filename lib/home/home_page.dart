@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -24,38 +26,63 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
-
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TabController _tabController;
 
   List<Tab> _tabs = List<Tab>();
   List<Widget> _generalWidgets = List<Widget>();
 
-  List<Category> categoryList=[];
+  List<Category> categoryList = [];
 
-  var categoryName=[
-    "Follow","Health","Funny","International","Hot",
+  // var categoryName = [
+  //   "Follow",
+  //   "Health",
+  //   "Funny",
+  //   "International",
+  //   "Hot",
+  // ];
+  // List<Category> categoryName = [];
+  static List<Action> _action = <Action>[
+    Action(title: 'Upload', icon: Icons.file_upload, widget: FileVideoPost()),
+    Action(title: 'Moment', icon: Icons.contact_mail, widget: MomentPost()),
+    Action(title: 'Article', icon: Icons.library_books, widget: ArticlePost()),
+    Action(title: 'Video', icon: Icons.video_call, widget: NonePageDetails()),
   ];
 
-  static List<Action> _action=<Action>[
-    Action(title: 'Upload',icon: Icons.file_upload,widget: FileVideoPost()),
-    Action(title: 'Moment',icon: Icons.contact_mail,widget: MomentPost()),
-    Action(title: 'Article',icon: Icons.library_books,widget: ArticlePost()),
-    Action(title: 'Video',icon: Icons.video_call,widget: NonePageDetails()),
-
-  ];
-
-  Action selectedAction=_action[0];
-
+  Action selectedAction = _action[0];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    addCategory();
-    _tabController = new TabController(length: categoryList.length, vsync: this);
-    _tabs = getTabs(categoryList.length);
+    //addCategory();
+    getCategory();
+    // getCategory().then((value) {
+    //   categoryList = value;
+    //   _tabController =
+    //       new TabController(length: categoryList.length, vsync: this);
+    //   _tabs = getTabs(categoryList.length);
+    // });
+    setState(() {
+      _tabController =
+          new TabController(length: categoryList.length, vsync: this);
+      _tabs = getTabs(categoryList.length);
+    });
+  }
 
+  getCategory() async {
+    var url = "http://10.0.2.2:3000/api/auth/category";
+    var res = await http.get(url);
+    if (res.statusCode == 200) {
+      var data = jsonDecode(res.body);
+      SQLiteDbProvider.db.deleCategory();
+      for (int i = 0; i < data.length; i++) {
+        Category category = Category(data[i]['Categoryid'],
+            data[i]['Categoryname'], data[i]['Categoryorder']);
+        categoryList.add(category);
+        SQLiteDbProvider.db.insertCategory(category);
+      }
+      print(data);
+    }
   }
 
   @override
@@ -64,14 +91,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
     super.dispose();
   }
 
-
   List<Tab> getTabs(int count) {
     _tabs.clear();
     for (int i = 0; i < count; i++) {
       _tabs.add(new Tab(
         text: categoryList[i].categoryName,
-      )
-      );
+      ));
     }
     return _tabs;
   }
@@ -79,38 +104,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
   List<Widget> getWidgets() {
     _generalWidgets.clear();
     for (int i = 0; i < _tabs.length; i++) {
-      if(categoryList[i].categoryName=='Follow'){
+      if (categoryList[i].categoryName == 'Follow') {
         _generalWidgets.add(FollowPageContent());
-      }else{
+      } else {
         _generalWidgets.add(_tabContent(context, categoryList[i].categoryName));
       }
     }
     return _generalWidgets;
   }
 
+  // void addCategory() {
+  //   for (int i = 0; i < categoryName.length; i++) {
+  //     categoryList.add(Category(i, categoryName[i]));
+  //   }
+  // }
 
-  void addCategory() {
-    for(int i=0;i<categoryName.length;i++){
-      categoryList.add(Category(i,categoryName[i]));
-    }
-  }
-
-  void _onSelected(Action action){
+  void _onSelected(Action action) {
     setState(() {
-      selectedAction=action;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => selectedAction.widget));
+      selectedAction = action;
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => selectedAction.widget));
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
-
     //_tabController = new TabController(length: categoryList.length, vsync: this);
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          onTap: () => showSearch(context: context, delegate: CustomSearchDelegate()),
+          onTap: () =>
+              showSearch(context: context, delegate: CustomSearchDelegate()),
           child: new Container(
             width: 400.0,
             height: 40.0,
@@ -123,18 +147,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
               borderRadius: BorderRadius.circular(10.0),
               color: Colors.white,
             ),
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.search,color: Colors.black26,),
-                  SizedBox(width: 10.0,),
-                  Text('Search...',
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.search,
+                  color: Colors.black26,
+                ),
+                SizedBox(
+                  width: 10.0,
+                ),
+                Text(
+                  'Search...',
                   style: TextStyle(
                     color: Colors.black26,
                     fontSize: 15.0,
                   ),
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
           ),
         ),
         actions: <Widget>[
@@ -142,9 +172,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
             data: Theme.of(context).copyWith(
               cardColor: Colors.black,
             ),
-            child:  PopupMenuButton(
-              itemBuilder: (BuildContext context){
-                return _action.map((Action action){
+            child: PopupMenuButton(
+              itemBuilder: (BuildContext context) {
+                return _action.map((Action action) {
                   return PopupMenuItem(
                     value: action,
                     child: Container(
@@ -152,19 +182,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
                       color: Colors.black,
                       child: Row(
                         children: <Widget>[
-                          Icon(action.icon,color: Colors.white,size: 20.0,),
+                          Icon(
+                            action.icon,
+                            color: Colors.white,
+                            size: 20.0,
+                          ),
                           SizedBox(
                             width: 3.0,
                           ),
-                          Text(action.title,style: TextStyle(fontSize: 13.0,color: Colors.white),),
+                          Text(
+                            action.title,
+                            style:
+                                TextStyle(fontSize: 13.0, color: Colors.white),
+                          ),
                         ],
                       ),
                     ),
                   );
                 }).toList();
               },
-              icon: Icon(Icons.add_a_photo,color: Colors.white,),
-              offset: Offset(0,100),
+              icon: Icon(
+                Icons.add_a_photo,
+                color: Colors.white,
+              ),
+              offset: Offset(0, 100),
               onSelected: _onSelected,
             ),
           ),
@@ -185,114 +226,115 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
 
   showAlertDialog(BuildContext context) {
     showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext c){
-        return AlertDialog(
-          title: Text('Choose to Post'),
-          content: _buildAllAction(c),
-        );
-      }
-    );
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext c) {
+          return AlertDialog(
+            title: Text('Choose to Post'),
+            content: _buildAllAction(c),
+          );
+        });
   }
-
 }
 
 class Action {
-
   final String title;
   final IconData icon;
   final Widget widget;
-  const Action({this.title, this.icon,this.widget});
-
+  const Action({this.title, this.icon, this.widget});
 }
 
 Widget _buildAllAction(BuildContext context) {
-
-  const List<Action> _action=const <Action>[
-    Action(title: 'Moment',icon: Icons.contact_mail),
-    Action(title: 'Article',icon: Icons.library_books),
-    Action(title: 'Video',icon: Icons.video_call),
-    Action(title: 'Upload',icon: Icons.file_upload),
-    Action(title: 'Moment',icon: Icons.library_books),
-    Action(title: 'Moment',icon: Icons.library_books),
-
+  const List<Action> _action = const <Action>[
+    Action(title: 'Moment', icon: Icons.contact_mail),
+    Action(title: 'Article', icon: Icons.library_books),
+    Action(title: 'Video', icon: Icons.video_call),
+    Action(title: 'Upload', icon: Icons.file_upload),
+    Action(title: 'Moment', icon: Icons.library_books),
+    Action(title: 'Moment', icon: Icons.library_books),
   ];
   File videoFile;
 
-  List<Widget> _allWidget=[
-    MomentPost(),ArticlePost(),CustomVideoPost(),FileVideoPost(),MomentPost(),MomentPost(),
+  List<Widget> _allWidget = [
+    MomentPost(),
+    ArticlePost(),
+    CustomVideoPost(),
+    FileVideoPost(),
+    MomentPost(),
+    MomentPost(),
   ];
 
   return Container(
-    height: MediaQuery.of(context).size.height*(40/100),
-    width: MediaQuery.of(context).size.width*(90/100),
+    height: MediaQuery.of(context).size.height * (40 / 100),
+    width: MediaQuery.of(context).size.width * (90 / 100),
     child: Column(
       children: <Widget>[
         Container(
-          height: MediaQuery.of(context).size.height*(30/100),
+          height: MediaQuery.of(context).size.height * (30 / 100),
           child: GridView.count(
             crossAxisCount: 3,
             crossAxisSpacing: 5,
             mainAxisSpacing: 5,
             primary: false,
-            children: new List<Widget>.generate(6, (index) {
-              return new GridTile(
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.pop(context);
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => _allWidget[index])
-                    );
-
-                  },
-                  child: Card(
-                    child: Center(
-                      child: Container(
-                        height: 100.0,
-                        width: 100.0,
-                        //margin: EdgeInsets.all(5.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.blueAccent, width: 2.0),
-                          color: Colors.white,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(5.0),
+            children: new List<Widget>.generate(
+              6,
+              (index) {
+                return new GridTile(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => _allWidget[index]));
+                    },
+                    child: Card(
+                      child: Center(
+                        child: Container(
+                          height: 100.0,
+                          width: 100.0,
+                          //margin: EdgeInsets.all(5.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.blueAccent, width: 2.0),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5.0),
+                            ),
+                            boxShadow: <BoxShadow>[
+                              new BoxShadow(
+                                color: Colors.grey,
+                                blurRadius: 3.0,
+                                offset: new Offset(3.0, 3.0),
+                              ),
+                            ],
                           ),
-                          boxShadow: <BoxShadow>[
-                            new BoxShadow(
-                              color: Colors.grey,
-                              blurRadius: 3.0,
-                              offset: new Offset(3.0, 3.0),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(_action[index].icon),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            Container(
-                              child: Text(
-                                _action[index].title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Montsarrot',
-                                  color: Colors.blueAccent,
-                                  fontSize: 12.0,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(_action[index].icon),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              Container(
+                                child: Text(
+                                  _action[index].title,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Montsarrot',
+                                    color: Colors.blueAccent,
+                                    fontSize: 12.0,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
             ),
           ),
         ),
@@ -300,18 +342,21 @@ Widget _buildAllAction(BuildContext context) {
           height: 10.0,
         ),
         GestureDetector(
-          onTap: (){
+          onTap: () {
             Navigator.pop(context);
           },
           child: Container(
             height: 40.0,
-            padding: EdgeInsets.only(left: 10.0,right: 10.0),
+            padding: EdgeInsets.only(left: 10.0, right: 10.0),
             decoration: BoxDecoration(
               color: Colors.blue,
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Center(
-              child: Text('Close',style: TextStyle(color: Colors.white),),
+              child: Text(
+                'Close',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ),
@@ -319,7 +364,6 @@ Widget _buildAllAction(BuildContext context) {
     ),
   );
 }
-
 
 Container _tabContent(BuildContext context, String category) {
   return Container(
@@ -359,27 +403,32 @@ List<Widget> getDelegate() {
   return _generalDelegates;
 }
 
-
-
 class ImageContent extends StatefulWidget {
   @override
   _ImageContentState createState() => _ImageContentState();
 }
 
 class _ImageContentState extends State<ImageContent> {
-
-  var images=[
-    "adv1.jpg","adv2.jpg","adv3.jpg","adv4.jpg","adv5.jpg","adv6.jpg",
+  var images = [
+    "adv1.jpg",
+    "adv2.jpg",
+    "adv3.jpg",
+    "adv4.jpg",
+    "adv5.jpg",
+    "adv6.jpg",
   ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height*(25/100),
+      height: MediaQuery.of(context).size.height * (25 / 100),
       child: Swiper(
-        itemBuilder: (BuildContext context,int index){
+        itemBuilder: (BuildContext context, int index) {
           //return new Image.network("http://via.placeholder.com/350x150",fit: BoxFit.fill,);
-          return new Image.asset('assets/'+images[index],fit: BoxFit.cover,);
+          return new Image.asset(
+            'assets/' + images[index],
+            fit: BoxFit.cover,
+          );
         },
         itemCount: images.length,
         pagination: new SwiperPagination(
@@ -395,11 +444,3 @@ class _ImageContentState extends State<ImageContent> {
     );
   }
 }
-
-
-
-
-
-
-
-

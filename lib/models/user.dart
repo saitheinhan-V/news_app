@@ -1,5 +1,4 @@
-
-class User{
+class User {
   final int userID;
   final String userName;
   final String password;
@@ -18,11 +17,11 @@ class User{
     );
   }
   Map<String, dynamic> toMap() => {
-    "userID": userID,
-    "userName": userName,
-    "password": password,
-    "phone": phone,
-  };
+        "userID": userID,
+        "userName": userName,
+        "password": password,
+        "phone": phone,
+      };
 
   User.fromJson(Map<String, dynamic> json)
       : userID = json['id'],
@@ -30,13 +29,10 @@ class User{
         password = json['password'],
         phone = json['phone'];
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'id': userID,
         'name': userName,
         'password': password,
-        'phone' : phone,
+        'phone': phone,
       };
-
-
 }
