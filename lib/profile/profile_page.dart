@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:news/models/following.dart';
 import 'package:news/models/user.dart';
 import 'package:news/profile/register/login_page.dart';
 import 'package:news/database/database.dart';
@@ -20,9 +21,13 @@ class _ProfilePageState extends State<ProfilePage> {
   String userName;
   int userID=0;
   int follower=0;
+  int following=0;
+  int post=0;
+  int video=0;
   bool logIn=false;
   List<User> userList=new List<User>();
   List<Follow> followerList=new List<Follow>();
+  List<Following> followingList = new List<Following>();
   var baseUrl="http://192.168.0.110:8081/user";
 
   @override
@@ -47,6 +52,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   setState(() {
                     followerList=value;
                     follower=followerList.length;
+                  });
+                });
+                checkFollowing(userID).then((value){
+                  setState(() {
+                    followingList=value;
+                    following=followingList.length;
                   });
                 });
             }else{
@@ -91,10 +102,105 @@ class _ProfilePageState extends State<ProfilePage> {
 //    return followers;
 //  }
 
+  insertFollower(int id) async{
+//    var response=await http.post(baseUrl+"/"+id.toString());
+//    var data=jsonDecode(response.body);
+//    print('Data Length===='+data.length.toString());
+//    SQLiteDbProvider.db.deleteFollower();
+//    for(int j=0;j<data.length;j++){
+//      //User user=User(j,'null','000','000');
+//      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+//      SQLiteDbProvider.db.insertFollower(follow);
+//    }
+    var response=await http.post("http://192.168.0.119:3000//api/follower",
+        body: {
+          "Userid" : id.toString(),
+        }
+    );
+    if(response.statusCode ==200){
+      var body=jsonDecode(response.body);
+      var data=body['data']['follower'];
+      print('Data Length===='+data.length.toString());
+      SQLiteDbProvider.db.deleteFollower();
+      for(int j=0;j<data.length;j++){
+        //User user=User(j,'null','000','000');
+        Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+        SQLiteDbProvider.db.insertFollower(follow);
+      }
+    }
+  }
+
   _movedToLoginPage(BuildContext context, LoginPage loginPage) async{
     User user=await Navigator.push(context, MaterialPageRoute(builder: (context)=> loginPage)) as User;
     userName=user.userName;
     userID=user.userID;
+    insertFollower(userID);
+    getFollowerList().then((value){
+      setState(() {
+        followerList=value;
+        follower=followerList.length;
+      });
+    });
+
+    checkFollowing(userID).then((value){
+      setState(() {
+        followingList=value;
+        following=followingList.length;
+      });
+    });
+  }
+
+  Future<List<Follow>> getFollower(int userId) async{
+    List<Follow> follows= List<Follow>();
+    var response=await http.post("http://192.168.0.119:3000//api/following",body: {
+      "Followerid" : userId.toString(),
+    });
+    if(response.statusCode ==200){
+      var body=jsonDecode(response.body);
+      var data=body['data']['following'];
+      print('Data Length====*****'+data.length.toString());
+      for(var n=0;n<data.length;n++){
+        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
+        follows.add(follow);
+      }
+    }
+
+    return follows;
+  }
+
+  Future<List<Following>> checkFollowing(int id) async{
+    List<Following> followings= await SQLiteDbProvider.db.getFollowing();//check currently following user from sqflite database
+    if(followings.length == 0){
+      List<Follow> followList= await getFollower(id);//get following list from server
+      SQLiteDbProvider.db.deleteFollowing();
+      List<Following> followingLists=new List<Following>();
+      for(var i=0;i<followList.length;i++){
+        Follow follow=followList[i];
+        var res= await http.post("http://192.168.0.119:3000//api/user/info",body: {
+          "Userid" : follow.userID.toString(),
+        });
+        print(res.body.toString());
+        if(res.statusCode ==200){
+          var body=jsonDecode(res.body);
+          var dataUser=body['data'];
+          //print('Data <<<<<<<'+dataUser.length.toString());
+          //followers.add(dataUser['Username']);
+          Following following=new Following(dataUser['Userid'],dataUser['Username'],dataUser['Phone'],dataUser['Password'],
+              dataUser['Createdate'],dataUser['Profilepic'],dataUser['Imei'],dataUser['Qq'],dataUser['Sex'],dataUser['Email'],
+              dataUser['Address'],dataUser['Birthday'],dataUser['Introduction']);
+          SQLiteDbProvider.db.insertFollowing(following);
+
+          followingLists.add(following);
+          res=null;
+          body=null;
+          dataUser=null;
+        }
+      }
+      return followingLists;
+    }else{
+      return followings;
+    }
+
   }
 
   @override
@@ -214,7 +320,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Column(
                                     children: <Widget>[
                                       Text(
-                                        '1.3k',
+                                        post.toString(),
                                         style: TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                       Text(
@@ -232,7 +338,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Column(
                                     children: <Widget>[
                                       Text(
-                                        '98',
+                                        video.toString(),
                                         style: TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                       Text(
@@ -255,6 +361,24 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       Text(
                                         'Follower',
+                                        style: TextStyle(
+                                          color: Color.fromRGBO(128, 128, 128, 1.0),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 5.0,right: 10.0),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Text(
+                                        following.toString(),
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        'Following',
                                         style: TextStyle(
                                           color: Color.fromRGBO(128, 128, 128, 1.0),
                                           fontSize: 12,

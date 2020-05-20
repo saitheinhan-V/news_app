@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intro_slider/slide_object.dart';
 import 'package:intro_slider/intro_slider.dart';
@@ -11,6 +13,9 @@ import 'package:news/profile/setting/setting_page.dart';
 import 'package:news/profile/profile_page.dart';
 import 'package:news/profile/register/login_page.dart';
 import 'package:news/profile/register/register_page.dart';
+import 'package:http/http.dart' as http;
+import 'database/database.dart';
+import 'models/category.dart';
 
 void main() => runApp(MyApp());
 
@@ -96,6 +101,7 @@ class IntroScreen extends StatefulWidget {
 
 class _IntroScreenState extends State<IntroScreen> {
   List<Slide> slides = new List();
+  bool first=true;
 
   @override
   void initState() {
@@ -142,6 +148,24 @@ class _IntroScreenState extends State<IntroScreen> {
         backgroundColor: Colors.green,
       ),
     );
+
+    //getCategory();
+  }
+
+  getCategory() async{
+    List<Category> categoryList= await SQLiteDbProvider.db.getCategory();
+    if(categoryList.length == 0 ){
+      var res = await http.get("http://192.168.0.110:3000//api/category");
+      if(res.statusCode ==200){
+        var body= jsonDecode(res.body);
+        var data=body['data']['category'];
+        print("--------" + data.length.toString());
+        for(int i=0;i<data.length;i++){
+          Category category=new Category(data[i]['Categoryid'], data[i]['Categoryname'], data[i]['Categoryorder']);
+          SQLiteDbProvider.db.insertCategory(category);
+        }
+      }
+    }
   }
 
   void onDonePress() {

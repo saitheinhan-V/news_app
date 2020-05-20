@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -30,7 +33,9 @@ class _MomentPostState extends State<MomentPost> {
 
   List<User> userList= List<User>();
   List<Token> tokenList=List<Token>();
+  List<String> links= List<String>();
   List<Asset> images = List<Asset>();
+  List<File> _files=[];
   String _error;
   String link='';
   String userToken='';
@@ -102,7 +107,6 @@ class _MomentPostState extends State<MomentPost> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    allList.clear();
     list.clear();
     images.clear();
     focusNode.unfocus();
@@ -121,22 +125,29 @@ class _MomentPostState extends State<MomentPost> {
     return userLists;
   }
 
-  Future<String> uploadImage(List<Asset> assets) async{
-    String link='';
-    String name='';
-    for(int i=0;i<assets.length;i++){
-      name=name+ assets[i].name;
-    }
-    print(name+ "=====File image====");
-    var uploadUrl="http://localhost:3000//api/auth/multipleupload";
-    var response= await http.post(uploadUrl,body: {
-      "files" : name
-    });
-    if(response.statusCode == 200){
-      var data=jsonDecode(response.body);
-      link=data['link'];
-    }
-    return link;
+  //Future<String> get filePath { return MultiImagePicker.requestFilePath(_identifier); }
+
+  Future<String> uploadImage(File file) async{
+    String s='';
+    var uploadUrl="http://192.168.0.119:3000//api/auth/upload";
+      //File file= assets[i];
+      FormData formData = new FormData.fromMap({
+        "file": await MultipartFile.fromFile(file.path),
+      });
+      Dio dio =new Dio();
+      Response response= await dio.post(uploadUrl,
+      data: formData);
+//      var response= await http.post(uploadUrl,body: {
+//        'file' : await MultipartFile.fromFile(file.path)
+//      });
+      print(response.data.toString());
+      if(response.statusCode == 200){
+        //var data=jsonDecode(response.data);
+        //linkList.add(response.data['filepath']);
+        s= response.data['filepath'];
+      }
+
+    return s;
   }
 
   Future<bool> _onBackPressed(){
@@ -168,17 +179,20 @@ class _MomentPostState extends State<MomentPost> {
     ): Navigator.pop(context);
   }
 
-  newMomentPost(int user_id,int user_post_id,String caption,String image,int like) async{
-    var insertUrl="http://192.168.0.110:3000//api/momentpost";
-    var response=await http.post(insertUrl,body: {
-      "Userid" : user_id.toString(),
-      "Userpostid" : user_post_id.toString(),
+  newMomentPost(String userPostToken,String caption,String image,int like) async{
+    var insertUrl="http://192.168.0.119:3000//api/momentpost";
+    var response=await http.post(insertUrl,
+        headers: {
+          'Authorization' : 'Bearer $userPostToken'
+        },
+        body: {
       "Caption" : caption,
       "Image" : image,
       "Likecount" : like.toString(),
     });
     if(response.statusCode ==200){
       print("Your post has been uploaded");
+      print(image);
       progressDialog.hide();
       showDialog(
           context: context,
@@ -203,48 +217,66 @@ class _MomentPostState extends State<MomentPost> {
     }
   }
 
-  insertNewUserPost(String token) async{
-    var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
+//  insertNewUserPost(String token) async{
+//    var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
+//        headers: {
+//          'Authorization' : 'Bearer $token'
+//        }
+//    );
+//    if(res.statusCode == 200){
+//      var dataUser=jsonDecode(res.body);
+//      //var userPost=dataUser['data']['user_post'];
+//      int userPostId=dataUser['data']['user_post']['id'];
+//      int id=dataUser['data']['user_post']['user_id'];
+//      //var create_date=userPost['create_date'];
+//      print(userPostId.toString() + "==@@@@@@@@@@" );
+//     // newMomentPost(id,userPostId,textEditingController.text,link,like);
+//    }
+//  }
+
+  uploadPost(String token) async{
+    var userPostUrl="http://192.168.0.119:3000//api/userpost";
+    var response= await http.post(userPostUrl,
         headers: {
           'Authorization' : 'Bearer $token'
-        }
-    );
-    if(res.statusCode == 200){
-      var dataUser=jsonDecode(res.body);
-      //var userPost=dataUser['data']['user_post'];
-      int userPostId=dataUser['data']['user_post']['id'];
-      int id=dataUser['data']['user_post']['user_id'];
-      //var create_date=userPost['create_date'];
-      print(userPostId.toString() + "==@@@@@@@@@@" );
-      newMomentPost(id,userPostId,textEditingController.text,link,like);
-    }
-  }
-
-  uploadPost(String user_token) async{
-    var userPostUrl="http://192.168.0.110:3000//api/userpost";
-    var response= await http.get(userPostUrl,
-        headers: {
-          'Authorization' : 'Bearer $user_token'
         });
     if(response.statusCode == 200){
       var data=jsonDecode(response.body);
-      var token=data['data']['token'];
-      insertNewUserPost(token);
+      var userPostToken=data['data']['token'];
+      print("All list length=========="+allList.length.toString());
+
+      var uploadUrl="http://192.168.0.119:3000//api/auth/upload";
+      for(int i=0;i<allList.length;i++){
+        //link = link + allList[i].stringLink + ",";
+//        uploadImage(allList[i].image).then((value){
+//          if(!mounted) return;
+//          setState(() {
+//            link = link + value + ",";
+//            //links=value;
+//            //print("Link length======="+links.length.toString());
+//          });
+//        });
+        File file= allList[i].image;
+        FormData formData = new FormData.fromMap({
+          "file": await MultipartFile.fromFile(file.path),
+        });
+        Dio dio =new Dio();
+        Response response= await dio.post(uploadUrl,
+            data: formData);
+        print(response.data.toString());
+        if(response.statusCode == 200){
+          link = link + response.data['filepath'] + ",";
+        }
+      }
+      print("link*********"+link);
+      newMomentPost(userPostToken,textEditingController.text, link, like);
     }
   }
 
-  upload() async{
+  upload(String user_token) async{
     progressDialog.show();
     if(userId!=0){
-      if(images.length !=0){
-        uploadImage(images).then((value){
-          setState(() {
-            link=value;
-            print(link+" ========Image link==========");
-          });
-        });
-      }
-      uploadPost(userToken);
+      uploadPost(user_token);
     }else{
       print('Please log in or register to be able to post');
     }
@@ -279,7 +311,9 @@ class _MomentPostState extends State<MomentPost> {
             ),
             onPressed: (){
               setState(() {
-                upload();
+                if(userToken !=null){
+                  upload(userToken);
+                }
               });
             },
           ) : Container(),
@@ -353,7 +387,13 @@ class _MomentPostState extends State<MomentPost> {
     );
   }
 
-  Future<void> loadAssets() async {
+  Future<String> getFilePath(Asset asset) async{
+    String filePath='';
+    filePath= await FlutterAbsolutePath.getAbsolutePath(asset.identifier);
+    return filePath;
+  }
+
+  Future<List<Asset>> loadAssets() async {
     setState(() {
       images = List<Asset>();
     });
@@ -363,50 +403,76 @@ class _MomentPostState extends State<MomentPost> {
 
     try {
       resultList = await MultiImagePicker.pickImages(
-        maxImages: maxImages,enableCamera: true,
-
+        maxImages: maxImages,
+        enableCamera: true,
       );
     } on Exception catch (e) {
       error = e.toString();
     }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+//     If the widget was removed from the tree while the asynchronous platform
+//     message was in flight, we want to discard the reply rather than calling
+//     setState to update our non-existent appearance.
+    //if (!mounted) return;
 
     setState(() {
       images = resultList;
+      print("Image count========"+images.length.toString());
 
-      if (error == null) _error = 'No Error Dectected';
-      if(list.length<=9){
-        print("============"+images.length.toString());
-        for(var i=0;i<images.length;i++){
-          Asset asset = images[i];
-          index=list.length-1;
-          list.insert(index, buildImage(asset));
-          allList.add(All(index,asset));
-        }
-        if(images.length==9){
-          print('length before============='+list.length.toString());
-          //list.removeLast();
-          //maxImages=0;
-          print('length after============='+list.length.toString());
-        }
+      if (error == null) _error = 'No Error Detected';
+    });
+
+    return images;
+  }
+
+  Future<void> init() async{
+    List<Asset> image= await loadAssets();
+    if(image.length != 0){
+      List<File> files=[];
+      for(Asset asset in image){
+        final filePath= await FlutterAbsolutePath.getAbsolutePath(asset.identifier);
+        files.add(File(filePath));
+      }
+      if(!mounted) return;
+      setState(() {
+        _files = files;
+        print("File length====="+_files.length.toString());
+//        uploadImage(_files).then((value){
+//          setState(() {
+//            links=value;
+//            print("Link length======="+links.length.toString());
+//          });
+//        });
+
+        if(list.length<=9){
+          print("============"+_files.length.toString());
+          for(var i=0;i<_files.length;i++){
+            File file=_files[i];
+            index=list.length-1;
+            list.insert(index, buildImage(file));
+            allList.add(All(index,file));
+          }
+          if(_files.length==9){
+            print('length before============='+list.length.toString());
+            //list.removeLast();
+            //maxImages=0;
+            print('length after============='+list.length.toString());
+          }
           if(list.length>=10){
             maxImages=0;
             list.removeLast();
             print('After length==='+list.length.toString());
           }else if(list.length==9){
             maxImages=1;
-          }
-          else{
+          } else{
             maxImages=(9-list.length)+1;
           }
           print("Max Length===="+maxImages.toString());
 
-      }
-    });
+        }
+      });
+
+    }
   }
 
   Widget buildGridView() {
@@ -601,9 +667,11 @@ class _MomentPostState extends State<MomentPost> {
       ),
       child: GestureDetector(
         onTap: (){
-          focusNode.unfocus();
-          loadAssets();
-          print("List length"+list.length.toString());
+          setState(() {
+            focusNode.unfocus();
+            init();
+            print("List length"+list.length.toString());
+          });
         },
         child: Center(
           child: Icon(Icons.add,size: 50.0,color: Colors.grey,),
@@ -612,7 +680,7 @@ class _MomentPostState extends State<MomentPost> {
     );
   }
 
-  Widget buildImage(Asset asset) {
+  Widget buildImage(File image) {
 
     return Container(
       height: 100.0,width: 100.0,
@@ -621,11 +689,7 @@ class _MomentPostState extends State<MomentPost> {
         alignment: Alignment.topRight,
         children: <Widget>[
           Container(
-            child: AssetThumb(
-              asset: asset,quality: 100,
-              width: 100,
-              height: 100,
-            ),
+            child: Image.file(image,fit: BoxFit.cover,width: 100.0,height: 100.0,),
           ),
           GestureDetector(
             onTap: (){
@@ -639,7 +703,7 @@ class _MomentPostState extends State<MomentPost> {
                 }
 
                 outer: for(var j=0;j<allList.length;j++){
-                  if(asset==allList[j].image){
+                  if(image==allList[j].image){
                     listLength=allList[j].id;
                     list.remove(list[listLength]);
                     break outer;
@@ -678,7 +742,7 @@ class _MomentPostState extends State<MomentPost> {
 
 class All{
    int id;
-   Asset image;
+   File image;
 
   All(this.id, this.image);
 }

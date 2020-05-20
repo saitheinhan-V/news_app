@@ -393,24 +393,53 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
     );
   }
 
-  insertFollower(int id) async{
-    //var followURL='https://firstgitlesson.000webhostapp.com/follower.php';
-//    var response= await http.post(followURL,body: {
-//      "userID" : userID.toString(),
-//    });
-    var response=await http.post("/"+id.toString());
-    var data=jsonDecode(response.body);
-    print('Data Length===='+data.length.toString());
-    SQLiteDbProvider.db.deleteFollower();
-    for(int j=0;j<data.length;j++){
-      //User user=User(j,'null','000','000');
-      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
-      SQLiteDbProvider.db.insertFollower(follow);
-    }
+//  insertFollower(int id) async{
+//    //var followURL='https://firstgitlesson.000webhostapp.com/follower.php';
+////    var response= await http.post(followURL,body: {
+////      "userID" : userID.toString(),
+////    });
+//    var response=await http.post("http://192.168.0.110:3000//api/follower",
+//      body: {
+//      "Userid" : id.toString(),
+//      }
+//    );
+//    if(response.statusCode ==200){
+//      var body=jsonDecode(response.body);
+//      var data=body['data']['follower'];
+//      print('Data Length===='+data.length.toString());
+//      SQLiteDbProvider.db.deleteFollower();
+//      for(int j=0;j<data.length;j++){
+//        //User user=User(j,'null','000','000');
+//        Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+//        SQLiteDbProvider.db.insertFollower(follow);
+//      }
+//    }
+//  }
+
+  showAlert(BuildContext context,String message){
+    showDialog(
+        context: context,
+      barrierDismissible: false,
+      builder: (BuildContext c){
+          return AlertDialog(
+            title: Text('Message'),
+            content: Text(message),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: (){
+                  Navigator.pop(c);
+                  progressDialog.hide();
+                },
+                child: Text('Ok'),
+              ),
+            ],
+          );
+      }
+    );
   }
 
   Future<User> _getUserInfo(String token) async{
-    var authorizeUrl="http://192.168.0.110:3000//api/auth/info";
+    var authorizeUrl="http://192.168.0.119:3000//api/auth/info";
 
     var response=await http.get(authorizeUrl,headers: {
       'Authorization' : 'Bearer $token'
@@ -424,32 +453,9 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
   }
 
   _logIn(String phone,String password) async{
-    var loginUrl="http://192.168.0.110:3000//api/auth/login";
+    var loginUrl="http://192.168.0.119:3000//api/auth/login";
 
     progressDialog.show();
-//    var res=await http.get(baseUrl,headers: {
-//      'Authorization' : 'Bearer $token'
-//    });
-//    Response response= await Dio().post(baseUrl+"/"+phone+"/"+password);
-//    if(response.statusCode == 200){
-//      var dataUser=jsonDecode(response.data);
-//      if(dataUser.length !=0){
-//        print('User exist');
-//        print("Length"+ dataUser.length.toString());
-//        print(dataUser['Username']+"====Name");
-//        User user=User(dataUser['Userid'],dataUser['Username'],dataUser['Password'],dataUser['Phone']);
-//         // Navigator.push(context, MaterialPageRoute(builder: (context)=> ProfilePage(userName: userName,userID: userID,)));
-//
-//        insertFollower(dataUser['Userid']);
-//        SQLiteDbProvider.db.delete();
-//        SQLiteDbProvider.db.insert(user);
-//        progressDialog.hide();
-//        Navigator.pop(context , user);
-//      }else{
-//        print('User doesnot exist');
-//      }
-//      progressDialog.hide();
-//    }
     var res= await http.post(loginUrl,body: {
       "Phone" : phone,
       "Password" : password,
@@ -466,52 +472,16 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
         SQLiteDbProvider.db.deleteToken();
         SQLiteDbProvider.db.insertToken(token);
         User user= await _getUserInfo(token);
-        // insertFollower(user.userID);
+         //insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
         progressDialog.hide();
         Navigator.pop(context , user);
       }
+    }else{
+      progressDialog.hide();
+      showAlert(context, msg);
     }
-    print(msg + token);
-    progressDialog.hide();
-//    var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
-//    //var selectUrl='https://firstgitlesson.000webhostapp.com/select.php';
-//    //var response = await http.get(Uri.encodeFull(selectUrl),headers: {"Accept":"application/json"});
-//    var response= await http.post(loginUrl,body: {
-//      "phone" : phoneNoController.text,
-//      "password" : passwordController.text,
-//    });
-//    print(phoneNoController.text+ passwordController.text);
-//    var dataUser=jsonDecode(response.body);
-//    print("User=======");
-//    print(response.body.toString());
-//    if(dataUser==null){
-//      var url='https://firstgitlesson.000webhostapp.com/signup.php';
-//    print('000000000000000');
-//    progressDialog.hide();
-//    }else{
-//      progressDialog.hide();
-//      print('11111111111111');
-//      print(dataUser.length.toString());
-//      for(var i=0;i<dataUser.length;i++){
-//        if(phone==dataUser[i]['phone'] && password==dataUser[i]['password']){
-//          //showAlertDialog(context);
-//          print('Log in successful!');
-//          userName=dataUser[i]['userName'];
-//          userID=int.parse(dataUser[i]['userID']);
-//          User user=User(userID,userName,password,phone);
-//         // Navigator.push(context, MaterialPageRoute(builder: (context)=> ProfilePage(userName: userName,userID: userID,)));
-//          SQLiteDbProvider.db.delete();
-//          SQLiteDbProvider.db.insert(user);
-//          Navigator.pop(context , user);
-//        }else{
-////
-//        }
-//      }
-//    }
-    //return dataUser;
-
   }
 }
 

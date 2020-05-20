@@ -145,17 +145,33 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     return data;
   }
 
-  insertFollower(int id) async{
-    var response=await http.post(baseUrl+"/"+id.toString());
-    var data=jsonDecode(response.body);
-    print('Data Length===='+data.length.toString());
-    SQLiteDbProvider.db.deleteFollower();
-    for(int j=0;j<data.length;j++){
-      //User user=User(j,'null','000','000');
-      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
-      SQLiteDbProvider.db.insertFollower(follow);
-    }
-  }
+//  insertFollower(int id) async{
+////    var response=await http.post(baseUrl+"/"+id.toString());
+////    var data=jsonDecode(response.body);
+////    print('Data Length===='+data.length.toString());
+////    SQLiteDbProvider.db.deleteFollower();
+////    for(int j=0;j<data.length;j++){
+////      //User user=User(j,'null','000','000');
+////      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+////      SQLiteDbProvider.db.insertFollower(follow);
+////    }
+//    var response=await http.post("http://192.168.0.110:3000//api/follower",
+//        body: {
+//          "Userid" : id.toString(),
+//        }
+//    );
+//    if(response.statusCode ==200){
+//      var body=jsonDecode(response.body);
+//      var data=body['data']['follower'];
+//      print('Data Length===='+data.length.toString());
+//      SQLiteDbProvider.db.deleteFollower();
+//      for(int j=0;j<data.length;j++){
+//        //User user=User(j,'null','000','000');
+//        Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+//        SQLiteDbProvider.db.insertFollower(follow);
+//      }
+//    }
+//  }
 
   Future<List<User>> getUser(String ph,String pw) async{
     List<User> userLists=List<User>();
@@ -171,7 +187,7 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
   }
 
   Future<User> _getUserInfo(String token) async{
-    var authorizeUrl="http://192.168.0.110:3000//api/auth/info";
+    var authorizeUrl="http://192.168.0.119:3000//api/auth/info";
 
     var response=await http.get(authorizeUrl,headers: {
       'Authorization' : 'Bearer $token'
@@ -184,30 +200,31 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 
   }
 
-  _signUp(String name, String phoneNo, String passWord) async{
-    var registerUrl="http://192.168.0.110:3000//api/auth/register";
+  showAlert(BuildContext context,String message){
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext c){
+          return AlertDialog(
+            title: Text('Message'),
+            content: Text(message),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: (){
+                  Navigator.pop(c);
+                  pr.hide();
+                },
+                child: Text('Ok'),
+              ),
+            ],
+          );
+        }
+    );
+  }
 
-//    List<User> usersData= await getUser(phoneNo, passWord);
-//    User users=usersData[0];
-//      if(users.userID != 0){
-//        print('User already exist');
-//
-//      }else{
-//        print('User doesnot exist');
-//        var res= await http.post(baseUrl+"/"+name+"/"+phoneNo+"/"+passWord);
-//        if(res.statusCode == 200){
-//          print("Account creation success");
-//          List<User> userData= await getUser(phoneNo,passWord);
-//          if(userData.length!=0){
-//            User user=userData[0];
-//            insertFollower(user.userID);
-//            SQLiteDbProvider.db.delete();
-//            SQLiteDbProvider.db.insert(user);
-//            Navigator.pop(context , user);
-//          }
-//          //progressDialog.hide();
-//        }
-//      }
+  _signUp(String name, String phoneNo, String passWord) async{
+    pr.show();
+    var registerUrl="http://192.168.0.119:3000//api/auth/register";
 
     var res= await http.post(registerUrl,body: {
       "Username" : name,
@@ -229,50 +246,14 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
         //insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
+        pr.hide();
         Navigator.pop(context , user);
       }
+    }else{
+      pr.hide();
+      showAlert(context, msg);
     }
-    print(msg +"==="+ token);
-      //progressDialog.hide();
-    //pr.show();
-    //var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
-    //var selectUrl='https://firstgitlesson.000webhostapp.com/select.php';
-    //var response = await http.get(Uri.encodeFull(selectUrl),headers: {"Accept":"application/json"});
-//    print(nameController.text+ passwordController.text);
-//    Future<List> futureList=checkUser(name, phoneNo, passWord);
-//    List dataUser= await futureList;
-//    print("User=======");
-//    if(dataUser.length==0){
-//      print('000000000000000');
-//      //insert into database for new user
-//      var signUpUrl='https://firstgitlesson.000webhostapp.com/account_signup.php';
-//      http.post(signUpUrl,body: {
-//        "username" : nameController.text,
-//        "password": passwordController.text,
-//        "phone" : phoneController.text,
-//        "imei" : iMEI,
-//      });
-//      //get user info after insert
-//      Future<List> futureList=checkUser(name, phoneNo, passWord);
-//      List data= await futureList;
-//      if(data.length!=0){
-//        //if(phoneNo==data[0]['phone'] && passWord==data[0]['password']){
-//        userID=int.parse(data[0]['userID']);
-//        userName=data[0]['userName'];
-//        User user=User(userID,userName,data[0]['password'],data[0]['phone']);
-//        //print(data[0]['userID'].toString() + data[0]['userName'] + data[0]['phone']);
-//        print('Register success!');
-//        SQLiteDbProvider.db.delete();
-//        SQLiteDbProvider.db.insert(user);
-//        Navigator.pop(context , user);
-//        //}
-//      }else{
-//        print('Failed to register!');
-//      }
-//    }else{
-//      print('11111111111111');
-//      print('Already Registered');
-//    }
+
 
   }
 
@@ -299,6 +280,22 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 
   @override
   Widget build(BuildContext context) {
+
+    pr = new ProgressDialog(context);
+    pr.style(
+        message: 'Sign up...',
+        borderRadius: 10.0,
+        backgroundColor: Colors.white,
+        progressWidget: CircularProgressIndicator(),
+        elevation: 3.0,
+        insetAnimCurve: Curves.easeInCirc,
+        progress: 0.0,
+        maxProgress: 10.0,
+        progressTextStyle: TextStyle(
+            color: Colors.black, fontSize: 1.0, fontWeight: FontWeight.w400),
+        messageTextStyle: TextStyle(
+            color: Colors.black, fontSize: 10.0, fontWeight: FontWeight.bold)
+    );
 
     return Form(
       key: registerFormKey,

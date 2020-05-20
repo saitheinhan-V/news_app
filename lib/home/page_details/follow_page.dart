@@ -97,15 +97,15 @@ class _FollowingContentState extends State<FollowingContent> {
         }
         if(userID!=0){
           setState(() {
-//            checkFollowing(userID).then((value){
-//              setState(() {
-//                followingList=value;
-//                print('Follower====='+followingList.length.toString());
-//                for(int i=0;i<followingList.length;i++){
-//                    list.insert(list.length-1, _buildFollowingProfile(followingList[i].userName));
-//                }
-//              });
-//            });
+            checkFollowing(userID).then((value){
+              setState(() {
+                followingList=value;
+                print('Following====='+followingList.length.toString());
+                for(int i=0;i<followingList.length;i++){
+                    list.insert(list.length-1, _buildFollowingProfile(followingList[i].userName));
+                }
+              });
+            });
           });
         }
       });
@@ -131,19 +131,25 @@ class _FollowingContentState extends State<FollowingContent> {
       List<Following> followingLists=new List<Following>();
       for(var i=0;i<followList.length;i++){
         Follow follow=followList[i];
-        var res= await http.post("http://192.168.0.110:8081/data/"+follow.userID.toString());
+        var res= await http.post("http://192.168.0.119:3000//api/user/info",body: {
+          "Userid" : follow.userID.toString(),
+        });
         print(res.body.toString());
-        var dataUser=jsonDecode(res.body);
-        //print('Data <<<<<<<'+dataUser.length.toString());
-        //followers.add(dataUser['Username']);
-        Following following=new Following(dataUser['Userid'],dataUser['Username'],dataUser['Phone'],dataUser['Password'],
-            dataUser['Createdate'],dataUser['Profilepic'],dataUser['Imei'],dataUser['Qq'],dataUser['Sex'],dataUser['Email'],
-            dataUser['Address'],dataUser['Birthday'],dataUser['Introduction']);
-        SQLiteDbProvider.db.insertFollowing(following);
+        if(res.statusCode ==200){
+          var body=jsonDecode(res.body);
+          var dataUser=body['data'];
+          //print('Data <<<<<<<'+dataUser.length.toString());
+          //followers.add(dataUser['Username']);
+          Following following=new Following(dataUser['Userid'],dataUser['Username'],dataUser['Phone'],dataUser['Password'],
+              dataUser['Createdate'],dataUser['Profilepic'],dataUser['Imei'],dataUser['Qq'],dataUser['Sex'],dataUser['Email'],
+              dataUser['Address'],dataUser['Birthday'],dataUser['Introduction']);
+          SQLiteDbProvider.db.insertFollowing(following);
 
-        followingLists.add(following);
-        res=null;
-        dataUser=null;
+          followingLists.add(following);
+          res=null;
+          body=null;
+          dataUser=null;
+        }
       }
       return followingLists;
     }else{
@@ -154,12 +160,17 @@ class _FollowingContentState extends State<FollowingContent> {
 
   Future<List<Follow>> getFollower(int userId) async{
     List<Follow> follows= List<Follow>();
-    var response=await http.post("http://192.168.0.110:8081/follow/"+userId.toString());
-    var data=jsonDecode(response.body);
-    print('Data Length====*****'+data.length.toString());
-    for(var n=0;n<data.length;n++){
-      Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
-      follows.add(follow);
+    var response=await http.post("http://192.168.0.119:3000//api/following",body: {
+      "Followerid" : userId.toString(),
+    });
+    if(response.statusCode ==200){
+      var body=jsonDecode(response.body);
+      var data=body['data']['following'];
+      print('Data Length====*****'+data.length.toString());
+      for(var n=0;n<data.length;n++){
+        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
+        follows.add(follow);
+      }
     }
     return follows;
   }

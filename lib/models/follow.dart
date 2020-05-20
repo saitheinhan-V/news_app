@@ -23,4 +23,18 @@ class Follow{
     "followDate": followDate,
   };
 
+  Follow.fromJson(Map<String, dynamic> json)
+      : followID = json['Followid'],
+        userID = json['Userid'],
+        followerID = json['Followerid'],
+        followDate = json['Followdate'];
+
+  Map<String, dynamic> toJson() =>
+      {
+        'Followid': followID,
+        'Userid': userID,
+        'Followerid': followerID,
+        'Followdate' : followDate,
+      };
+
 }

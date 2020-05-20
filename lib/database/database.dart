@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:news/models/category.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/models/following.dart';
 import 'package:news/models/token.dart';
@@ -26,7 +27,7 @@ class SQLiteDbProvider {
     String path = join(documentsDirectory.path, "News.db");
     return await openDatabase(
         path,
-        version: 1,
+        version: 2,
         onOpen: (db) {},
         onCreate: (Database db, int version) async {
           await db.execute("CREATE TABLE User ("
@@ -68,6 +69,13 @@ class SQLiteDbProvider {
               ")"
           );
 
+          await db.execute("CREATE TABLE Category("
+             "categoryID INTEGER PRIMARY KEY,"
+              "categoryName TEXT,"
+              "categoryOrder INTEGER"
+              ")"
+          );
+
           //db.execute("insert into quotes (quote, author) values ('Be happy in the moment, that’s enough. Each moment is all we need, not more.', 'Mother Teresa')");
           // db.execute("insert into quotes (quote, author) values ('Be here now', 'Ram Dass')");
 
@@ -93,6 +101,19 @@ class SQLiteDbProvider {
     return users;
   }
 
+  Future<List<Category>> getCategory() async {
+    final db = await database;
+    List<Map> results = await db.query("Category", columns: Category.columns);
+    List<Category> categories = new List<Category>();
+    results.forEach((result) {
+      Category category = Category.fromMap(result);
+      categories.add(category);
+    });
+    return categories;
+  }
+
+
+
   Future<List<Follow>> getFollower() async{
     final db = await database;
     List<Map> results= await db.query("Follow", columns: Follow.columns);
@@ -106,6 +127,13 @@ class SQLiteDbProvider {
 
   Future<List<Following>> getFollowing() async{
     final db = await database;
+    List<Map> results= await db.query("Following", columns: Following.columns);
+    List<Following> follows= new List();
+    results.forEach((result){
+      Following following = Following.fromMap(result);
+      follows.add(following);
+    });
+    return follows;
 
   }
 
@@ -146,6 +174,15 @@ class SQLiteDbProvider {
     return result;
   }
 
+  insertCategory(Category category) async{
+    final db = await database;
+    var result = await db.rawInsert(
+        "INSERT Into Category (categoryID, categoryName, categoryOrder ) VALUES (?, ?, ?)", [category.categoryID,category.categoryName,category.categoryOrder]
+    );
+    return result;
+  }
+
+
   insertFollowing(Following following) async{
     final db = await database;
     var result= await db.rawInsert(
@@ -177,6 +214,11 @@ class SQLiteDbProvider {
   deleteToken() async{
     final db= await database;
     db.delete("Token");
+  }
+
+  deleteCategory() async{
+    final db= await database;
+    db.delete("Category");
   }
 
 

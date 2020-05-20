@@ -17,7 +17,7 @@ class Following{
       this.createDate, this.profilePic, this.IMEI, this.QQ, this.sex,
       this.email, this.address, this.birthday, this.introduction);
 
-  //static final columns = ["us", "userName", "password", "phone"];
+  static final columns = ["userID", "userName", "phone", "password","createDate","profilePic","IMEI","QQ","sex","email","address","birthday","introduction"];
 
   factory Following.fromMap(Map<String, dynamic> data) {
     return Following(

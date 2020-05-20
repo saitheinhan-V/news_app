@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -18,6 +19,8 @@ import 'package:news/search/search.dart';
 import 'dart:io';
 import 'package:news/database/database.dart';
 import 'package:news/models/user.dart';
+import 'package:http/http.dart' as http;
+import 'package:progress_dialog/progress_dialog.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -30,12 +33,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
 
   List<Tab> _tabs = List<Tab>();
   List<Widget> _generalWidgets = List<Widget>();
-
   List<Category> categoryList=[];
+  List<String> name=List<String>();
 
-  var categoryName=[
-    "Follow","Health","Funny","International","Hot",
-  ];
 
   static List<Action> _action=<Action>[
     Action(title: 'Upload',icon: Icons.file_upload,widget: FileVideoPost()),
@@ -46,40 +46,91 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
   ];
 
   Action selectedAction=_action[0];
+  ProgressDialog progressDialog;
 
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    addCategory();
-    _tabController = new TabController(length: categoryList.length, vsync: this);
-    _tabs = getTabs(categoryList.length);
+    //addCategory();
+    categoryList.add(Category(1,'Follow',1));
+    categoryList.add(Category(2,'Funny',1));
+    categoryList.add(Category(2,'Health',1));
+    categoryList.add(Category(3,'International',1));
+    categoryList.add(Category(4,'Hot',1));
+
+
+    _tabs = getTabs(categoryList);
+    _tabController = TabController(length: categoryList.length, vsync: this);
+//    getCategory().then((value){
+//      setState(() {
+//        categoryList.clear();
+//        categoryList=value;
+//        print("List length==========="+categoryList.length.toString());
+//        _tabs = getTabs(categoryList);
+//        //_tabController = TabController(length: categoryList.length, vsync: this);
+//      });
+//    });
+  getCategory().then((value){
+    setState(() {
+      //categoryList=value;
+    });
+  });
 
   }
+
+//  Future<List<Category>> addCategory() async{
+//    List<Category> categories=List<Category>();
+//      categories=await getCategory();
+////      print("CAGteroy-----------------------------------====="+categoryList.length.toString());
+//      //print(categoryList[0].categoryName+categoryList[1].categoryName+categoryList[2].categoryName);
+////      for(int i=0;i<categoryList.length;i++){
+////        name.add(categoryList[i].categoryName);
+////      }
+//    //_tabController = TabController(length: categoryList.length, vsync: this);
+//    //_tabs = getTabs(categoryList);
+//    return categories;
+//  }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
+  Future<List<Category>> getCategory() async{
+    SQLiteDbProvider.db.deleteCategory();
+    List<Category> categoryLists=[];
+//    return categoryList;
+    //List<Category> categoryLists= await SQLiteDbProvider.db.getCategory();
+      var res = await http.get("http://192.168.0.119:3000//api/category");
+      if(res.statusCode ==200){
+        var body= jsonDecode(res.body);
+        var data=body['data']['category'];
+        print("--------" + data.length.toString());
+        for(int i=0;i<data.length;i++){
+          Category category=new Category(data[i]['Categoryid'], data[i]['Categoryname'], data[i]['Categoryorder']);
+          categoryLists.add(category);
+          SQLiteDbProvider.db.insertCategory(category);
+        }
+      }
 
-  List<Tab> getTabs(int count) {
+    return categoryLists;
+  }
+
+
+  List<Tab> getTabs(List<Category> category) {
     _tabs.clear();
-    for (int i = 0; i < count; i++) {
-      _tabs.add(new Tab(
-        text: categoryList[i].categoryName,
-      )
-      );
+    for (int i = 0; i<category.length; i++) {
+      _tabs.add(new Tab(text: category[i].categoryName));
     }
     return _tabs;
   }
 
-  List<Widget> getWidgets() {
+  List<Widget> getWidgets(int count) {
     _generalWidgets.clear();
-    for (int i = 0; i < _tabs.length; i++) {
-      if(categoryList[i].categoryName=='Follow'){
+    for (int i = 0; i < count; i++) {
+      if(categoryList[i].categoryName =='Follow'){
         _generalWidgets.add(FollowPageContent());
       }else{
         _generalWidgets.add(_tabContent(context, categoryList[i].categoryName));
@@ -88,12 +139,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
     return _generalWidgets;
   }
 
-
-  void addCategory() {
-    for(int i=0;i<categoryName.length;i++){
-      categoryList.add(Category(i,categoryName[i]));
-    }
-  }
 
   void _onSelected(Action action){
     setState(() {
@@ -105,82 +150,94 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
 
-
-    //_tabController = new TabController(length: categoryList.length, vsync: this);
-    return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () => showSearch(context: context, delegate: CustomSearchDelegate()),
-          child: new Container(
-            width: 400.0,
-            height: 40.0,
-            padding: EdgeInsets.only(left: 10.0),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white,
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(10.0),
-              color: Colors.white,
-            ),
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.search,color: Colors.black26,),
-                  SizedBox(width: 10.0,),
-                  Text('Search...',
-                  style: TextStyle(
-                    color: Colors.black26,
-                    fontSize: 15.0,
+    return  Scaffold(
+          appBar: AppBar(
+            title: GestureDetector(
+              onTap: () => showSearch(context: context, delegate: CustomSearchDelegate()),
+              child: new Container(
+                width: 400.0,
+                height: 40.0,
+                padding: EdgeInsets.only(left: 10.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0,
                   ),
-                  ),
-                ],
-              ),
-          ),
-        ),
-        actions: <Widget>[
-          Theme(
-            data: Theme.of(context).copyWith(
-              cardColor: Colors.black,
-            ),
-            child:  PopupMenuButton(
-              itemBuilder: (BuildContext context){
-                return _action.map((Action action){
-                  return PopupMenuItem(
-                    value: action,
-                    child: Container(
-                      width: 75.0,
-                      color: Colors.black,
-                      child: Row(
-                        children: <Widget>[
-                          Icon(action.icon,color: Colors.white,size: 20.0,),
-                          SizedBox(
-                            width: 3.0,
-                          ),
-                          Text(action.title,style: TextStyle(fontSize: 13.0,color: Colors.white),),
-                        ],
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.white,
+                ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.search,color: Colors.black26,),
+                      SizedBox(width: 10.0,),
+                      Text('Search...',
+                      style: TextStyle(
+                        color: Colors.black26,
+                        fontSize: 15.0,
                       ),
-                    ),
-                  );
-                }).toList();
-              },
-              icon: Icon(Icons.add_a_photo,color: Colors.white,),
-              offset: Offset(0,100),
-              onSelected: _onSelected,
+                      ),
+                    ],
+                  ),
+              ),
+            ),
+            actions: <Widget>[
+              Theme(
+                data: Theme.of(context).copyWith(
+                  cardColor: Colors.black,
+                ),
+                child:  PopupMenuButton(
+                  itemBuilder: (BuildContext context){
+                    return _action.map((Action action){
+                      return PopupMenuItem(
+                        value: action,
+                        child: Container(
+                          width: 75.0,
+                          color: Colors.black,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(action.icon,color: Colors.white,size: 20.0,),
+                              SizedBox(
+                                width: 3.0,
+                              ),
+                              Text(action.title,style: TextStyle(fontSize: 13.0,color: Colors.white),),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  icon: Icon(Icons.add_a_photo,color: Colors.white,),
+                  offset: Offset(0,100),
+                  onSelected: _onSelected,
+                ),
+              ),
+            ],
+            bottom: TabBar(
+              //indicatorSize: TabBarIndicatorSize.label,
+              isScrollable: true,
+              tabs:  _tabs,
+//            tabs: [
+//              Tab(text: "Follow",),
+//              Tab(icon: Icon(Icons.directions_transit)),
+//              Tab(icon: Icon(Icons.directions_bike)),
+//              Tab(icon: Icon(Icons.directions_transit)),
+//              Tab(icon: Icon(Icons.directions_bike)),
+//            ],
+              controller: _tabController,
             ),
           ),
-        ],
-        bottom: TabBar(
-          //indicatorSize: TabBarIndicatorSize.label,
-          isScrollable: true,
-          tabs: _tabs,
-          controller: _tabController,
-        ),
-      ),
-      body: TabBarView(
-        children: getWidgets(),
-        controller: _tabController,
-      ),
-    );
+          body: TabBarView(
+//          children: [
+//            Icon(Icons.directions_car),
+//            Icon(Icons.directions_transit),
+//            Icon(Icons.directions_bike),
+//            Icon(Icons.directions_car),
+//            Icon(Icons.directions_transit),
+//          ],
+            children: getWidgets(_tabs.length),
+            controller: _tabController,
+          ),
+        );
   }
 
   showAlertDialog(BuildContext context) {
