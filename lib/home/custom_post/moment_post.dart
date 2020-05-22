@@ -8,6 +8,7 @@ import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:news/api.dart';
 import 'package:news/models/token.dart';
 import 'package:news/models/user.dart';
 import 'package:news/database/database.dart';
@@ -36,16 +37,19 @@ class _MomentPostState extends State<MomentPost> {
   List<String> links= List<String>();
   List<Asset> images = List<Asset>();
   List<File> _files=[];
+  List<Widget> list=[];
+  List<All> allList=[];
+
   String _error;
   String link='';
   String userToken='';
-  List<Widget> list=[];
 
-  List<All> allList=[];
   int listLength=0;
   int maxImages=9;
   int index=0;
   int like=0;
+
+  Api api= new Api();
 
   void hideKeyboard() {
     focusNode.unfocus();
@@ -129,21 +133,14 @@ class _MomentPostState extends State<MomentPost> {
 
   Future<String> uploadImage(File file) async{
     String s='';
-    var uploadUrl="http://192.168.0.119:3000//api/auth/upload";
-      //File file= assets[i];
       FormData formData = new FormData.fromMap({
         "file": await MultipartFile.fromFile(file.path),
       });
       Dio dio =new Dio();
-      Response response= await dio.post(uploadUrl,
+      Response response= await dio.post(Api.UPLOAD_URL,
       data: formData);
-//      var response= await http.post(uploadUrl,body: {
-//        'file' : await MultipartFile.fromFile(file.path)
-//      });
       print(response.data.toString());
       if(response.statusCode == 200){
-        //var data=jsonDecode(response.data);
-        //linkList.add(response.data['filepath']);
         s= response.data['filepath'];
       }
 
@@ -180,8 +177,7 @@ class _MomentPostState extends State<MomentPost> {
   }
 
   newMomentPost(String userPostToken,String caption,String image,int like) async{
-    var insertUrl="http://192.168.0.119:3000//api/momentpost";
-    var response=await http.post(insertUrl,
+    var response=await http.post(Api.NEWMOMENTPOST_URL,
         headers: {
           'Authorization' : 'Bearer $userPostToken'
         },
@@ -217,26 +213,8 @@ class _MomentPostState extends State<MomentPost> {
     }
   }
 
-//  insertNewUserPost(String token) async{
-//    var res= await http.get("http://192.168.0.110:3000//api/userpost/info",
-//        headers: {
-//          'Authorization' : 'Bearer $token'
-//        }
-//    );
-//    if(res.statusCode == 200){
-//      var dataUser=jsonDecode(res.body);
-//      //var userPost=dataUser['data']['user_post'];
-//      int userPostId=dataUser['data']['user_post']['id'];
-//      int id=dataUser['data']['user_post']['user_id'];
-//      //var create_date=userPost['create_date'];
-//      print(userPostId.toString() + "==@@@@@@@@@@" );
-//     // newMomentPost(id,userPostId,textEditingController.text,link,like);
-//    }
-//  }
-
   uploadPost(String token) async{
-    var userPostUrl="http://192.168.0.119:3000//api/userpost";
-    var response= await http.post(userPostUrl,
+    var response= await http.post(Api.NEWPOST_URL,
         headers: {
           'Authorization' : 'Bearer $token'
         });
@@ -245,23 +223,13 @@ class _MomentPostState extends State<MomentPost> {
       var userPostToken=data['data']['token'];
       print("All list length=========="+allList.length.toString());
 
-      var uploadUrl="http://192.168.0.119:3000//api/auth/upload";
       for(int i=0;i<allList.length;i++){
-        //link = link + allList[i].stringLink + ",";
-//        uploadImage(allList[i].image).then((value){
-//          if(!mounted) return;
-//          setState(() {
-//            link = link + value + ",";
-//            //links=value;
-//            //print("Link length======="+links.length.toString());
-//          });
-//        });
         File file= allList[i].image;
         FormData formData = new FormData.fromMap({
           "file": await MultipartFile.fromFile(file.path),
         });
         Dio dio =new Dio();
-        Response response= await dio.post(uploadUrl,
+        Response response= await dio.post(Api.UPLOAD_URL,
             data: formData);
         print(response.data.toString());
         if(response.statusCode == 200){
@@ -329,6 +297,7 @@ class _MomentPostState extends State<MomentPost> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: <Widget>[
+
                             Container(
                               padding: EdgeInsets.only(top: 5.0,left: 10.0,right: 10.0,bottom: 5.0),
                               child: TextField(

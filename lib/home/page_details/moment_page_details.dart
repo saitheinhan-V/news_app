@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:news/models/check_time.dart';
 import 'package:news/home/post/moment_image.dart';
+import 'package:news/models/following.dart';
+import 'package:news/models/moment.dart';
 import 'package:news/profile/recommend_user_profile.dart';
 import 'package:news/search/search_people.dart';
 import 'package:news/profile/user_profile_page.dart';
@@ -12,7 +14,9 @@ class MomentPageDetails extends StatefulWidget {
 
   final List image;
   final bool follow;
-  MomentPageDetails({Key key,this.image,this.follow}):super(key: key);
+  final Moment moment;
+  final Following following;
+  MomentPageDetails({Key key,this.image,this.follow,this.moment,this.following}):super(key: key);
 
   @override
   _MomentPageDetailsState createState() => _MomentPageDetailsState();
@@ -45,12 +49,17 @@ class _MomentPageDetailsState extends State<MomentPageDetails> {
   bool isWriting=false;
   bool isShowSticker=false;
 
+  Following following;
+  Moment moment;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     imageList=widget.image;
     isFollowed=widget.follow;
+    moment=widget.moment;
+    following=widget.following;
     print(imageList.length.toString());
     date=Check().checkDate(created, now);
     height=Check().checkImage(imageList);

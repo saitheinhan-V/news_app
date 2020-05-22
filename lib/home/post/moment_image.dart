@@ -1,8 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news/models/check_time.dart';
 
 class MomentImage extends StatefulWidget {
-  final List image;
+  final List<String> image;
   final int height;
   MomentImage({Key key,this.image,this.height}):super(key: key);
 
@@ -19,10 +20,11 @@ class _MomentImageState extends State<MomentImage> {
     'https://images.unsplash.com/photo-1543922596-b3bbaba80649?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
     'https://images.unsplash.com/photo-1502943693086-33b5b1cfdf2f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80',
   ];
-  List imgList=[];
+  List<String> imgList=[];
   var height=0;
   bool one=false,two=false,three=false,four=false,five=false;
   int len=0;
+  var baseUrl="http://192.168.0.119:3000/public/";
 
   @override
   void initState() {
@@ -142,12 +144,13 @@ class _MomentImageState extends State<MomentImage> {
                       height: 150.0,
                       child: Container(
                         margin: EdgeInsets.all(2.0),
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/'+imgList[0]),
-                              fit: BoxFit.cover,
-                            )
-                        ),
+//                        child: CachedNetworkImage(
+//                          imageUrl: baseUrl+imgList[0],
+//                          //placeholder: (context, url) => CircularProgressIndicator(),
+//                          errorWidget: (context, url, error) => Icon(Icons.error),
+//                          fit: BoxFit.cover,
+//                        ),
+                        child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
                       ),
                     )
                 ),
@@ -157,12 +160,14 @@ class _MomentImageState extends State<MomentImage> {
                       height: 150.0,
                       child: Container(
                         margin: EdgeInsets.all(2.0),
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/'+imgList[1]),
-                              fit: BoxFit.cover,
-                            )
-                        ),
+//                        child: CachedNetworkImage(
+//                          imageUrl: baseUrl+imgList[1],
+//                          //placeholder: (context, url) => CircularProgressIndicator(),
+//                          errorWidget: (context, url, error) => Icon(Icons.error),
+//                          fit: BoxFit.cover,
+//                        ),
+                        child: Image.network(baseUrl+imgList[1],fit: BoxFit.cover,),
+
                       ),
                     )
                 ),
@@ -173,12 +178,13 @@ class _MomentImageState extends State<MomentImage> {
             height: 200.0,
             child: Container(
               margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/'+imgList[0]),
-                    fit: BoxFit.cover,
-                  )
-              ),
+//              child: CachedNetworkImage(
+//                imageUrl: baseUrl+imgList[0],
+//                //placeholder: (context, url) => CircularProgressIndicator(),
+//                errorWidget: (context, url, error) => Icon(Icons.error),
+//                fit: BoxFit.cover,
+//              ),
+            child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
             ),
           ): Container(),
         ],
@@ -191,12 +197,19 @@ class _MomentImageState extends State<MomentImage> {
       height: 100.0,
       child: Container(
         margin: EdgeInsets.all(2.0),
-        decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/'+image),
-              fit: BoxFit.cover,
-            )
-        ),
+//        child: CachedNetworkImage(
+//          imageUrl: baseUrl+image,
+//         // placeholder: (context, url) => CircularProgressIndicator(),
+//          errorWidget: (context, url, error) => Icon(Icons.error),
+//          fit: BoxFit.cover,
+//        ),
+        child: Image.network(baseUrl+image,fit: BoxFit.cover,),
+//      decoration: BoxDecoration(
+//        image: DecorationImage(
+//          image: NetworkImage(baseUrl+image),
+//          fit: BoxFit.cover,
+//        )
+//      ),
       ),
     );
   }

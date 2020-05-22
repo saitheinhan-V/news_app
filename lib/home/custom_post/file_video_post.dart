@@ -58,7 +58,6 @@ class _FileVideoPostState extends State<FileVideoPost> {
   void initState() {
     super.initState();
     hasVideo = false;
-//
 //    getCategory().then((value) {
 //      categoryList = value;
 //      for (int i = 0; i < categoryList.length; i++) {
@@ -236,6 +235,7 @@ class _FileVideoPostState extends State<FileVideoPost> {
             color: Colors.black, fontSize: 1.0, fontWeight: FontWeight.w400),
         messageTextStyle: TextStyle(
             color: Colors.black, fontSize: 10.0, fontWeight: FontWeight.bold));
+
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
@@ -809,7 +809,7 @@ class _FileVideoPostState extends State<FileVideoPost> {
             return AlertDialog(
               title: Text('Warning'),
               content: Text(
-                'Please enter both category and caption field to be able to home.post!',
+                'Please enter both category and caption field to be able to post!',
                 style: TextStyle(height: 1.5),
               ),
               actions: <Widget>[

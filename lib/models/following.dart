@@ -23,8 +23,8 @@ class Following{
     return Following(
       data['userID'],
       data['userName'],
-      data['password'],
-      data['phone'],
+        data['phone'],
+        data['password'],
       data['createDate'],
       data['profilePic'],
       data['IMEI'],
@@ -39,8 +39,8 @@ class Following{
   Map<String, dynamic> toMap() => {
     "userID": userID,
     "userName": userName,
-    "password": password,
     "phone": phone,
+    "password": password,
     "createDate" : createDate,
     "profilePic" : profilePic,
     "IMEI" : IMEI,
@@ -51,4 +51,26 @@ class Following{
     "birthday" : birthday,
     "introduction" : introduction
   };
+
+  Following.fromJson(Map<String, dynamic> json)
+      : userID = json['Userid'],
+        userName = json['Username'],
+        phone = json['Phone'],
+        password = json['Password'],
+        createDate = json['Createdate'],
+        profilePic = json['Profilepic'],
+        IMEI = json['Imei'],
+        QQ = json['Qq'],
+        sex = json['Sex'],
+        email = json['Email'],
+        address = json['Address'],
+        birthday = json['Birthday'],
+        introduction = json['Introduction'];
+
+//  Map<String, dynamic> toJson() =>
+//      {
+//        'categoryID': categoryID,
+//        'categoryName': categoryName,
+//        'categoryOrder': categoryOrder,
+//      };
 }

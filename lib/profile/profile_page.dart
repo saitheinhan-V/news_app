@@ -60,6 +60,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     following=followingList.length;
                   });
                 });
+                getTotalPost(userID).then((value){
+                  setState(() {
+                    post= value;
+                  });
+                });
             }else{
               follower=0;
             }
@@ -68,6 +73,19 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       });
     });
+  }
+
+  Future<int> getTotalPost(int id) async{
+    int count=0;
+    var response= await http.post("http://192.168.0.119:3000//api/userpost/count",
+    body: {
+      'Userid' : id.toString(),
+    });
+    if(response.statusCode ==200){
+      var data=jsonDecode(response.body);
+      count= data['count'];
+    }
+    return count;
   }
 
   Future<List<Follow>> getFollowerList() async{

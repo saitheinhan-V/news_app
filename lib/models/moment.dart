@@ -5,7 +5,7 @@ class Moment{
   int userPostID;
   String caption;
   String image;
-  String likeCount;
+  int likeCount;
   String createDate;
 
   Moment(this.momentPostID, this.userID, this.userPostID, this.caption,

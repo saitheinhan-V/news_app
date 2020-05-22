@@ -23,7 +23,7 @@ class Check{
     return date;
   }
 
-  int checkImage(List imgList){
+  int checkImage(List<String> imgList){
     var height=0;
 //    if(imageList.length==1){
 //      height=200;

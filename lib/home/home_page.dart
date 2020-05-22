@@ -11,6 +11,9 @@ import 'package:news/home/post/moment_page.dart';
 import 'package:news/home/post/one_page.dart';
 import 'package:news/home/post/none_page.dart';
 import 'package:news/home/post/three_page.dart';
+import 'package:news/models/follow.dart';
+import 'package:news/models/following.dart';
+import 'package:news/models/moment.dart';
 import 'package:news/video/video_page.dart';
 import 'package:news/home/custom_post/custom_video_post.dart';
 import 'package:news/home/custom_post/file_video_post.dart';
@@ -35,6 +38,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
   List<Widget> _generalWidgets = List<Widget>();
   List<Category> categoryList=[];
   List<String> name=List<String>();
+  List<Moment> momentList=List<Moment>();
+  List<Following> followingList=List<Following>();
+  List<User> userList=List<User>();
+
+  int userID=0;
 
 
   static List<Action> _action=<Action>[
@@ -72,6 +80,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
 //        //_tabController = TabController(length: categoryList.length, vsync: this);
 //      });
 //    });
+
+    setState(() {
+      checkUser().then((value){
+        userList=value;
+        if(userList.length==0){
+          userID=0;
+        }else{
+          User user=userList[0];
+          userID=user.userID;
+          print("Result========"+userID.toString());
+        }
+      });
+    });
+
   getCategory().then((value){
     setState(() {
       //categoryList=value;
@@ -79,6 +101,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
   });
 
   }
+
+  Future<List<User>> checkUser() async{
+    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
+    List<User> userLists= await futureList;
+    return userLists;
+  }
+
 
 //  Future<List<Category>> addCategory() async{
 //    List<Category> categories=List<Category>();
@@ -131,7 +160,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
     _generalWidgets.clear();
     for (int i = 0; i < count; i++) {
       if(categoryList[i].categoryName =='Follow'){
-        _generalWidgets.add(FollowPageContent());
+        _generalWidgets.add(FollowPageContent(userID: userID,));
       }else{
         _generalWidgets.add(_tabContent(context, categoryList[i].categoryName));
       }
@@ -410,7 +439,7 @@ List<Widget> getDelegate() {
     _generalDelegates.add(DisplayNoneContent());
     _generalDelegates.add(DisplayOneContent());
     _generalDelegates.add(DisplayThreeContent());
-    _generalDelegates.add(MomentPage());
+   // _generalDelegates.add(MomentPage());
     _generalDelegates.add(DisplayThreeContent());
   }
   return _generalDelegates;
