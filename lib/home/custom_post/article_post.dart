@@ -12,6 +12,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:markdown/markdown.dart' as mk;
 
 class ArticlePost extends StatefulWidget {
   @override
@@ -28,6 +29,7 @@ class _ArticlePostState extends State<ArticlePost> {
 
   String userToken='';
   String _selectedCategory;
+  String testoHtml;
 
   List<User> userList=[];
   List<Token> tokenList=[];
@@ -52,6 +54,8 @@ class _ArticlePostState extends State<ArticlePost> {
     _loadDocument().then((document) {
       setState(() {
         _controller = ZefyrController(document);
+        testoHtml = mk.markdownToHtml(_controller.document.toString());
+        print("Html****"+testoHtml);
       });
     });
 
@@ -408,7 +412,7 @@ class _ArticlePostState extends State<ArticlePost> {
     final contents = await file.readAsString();
     return NotusDocument.fromJson(jsonDecode(contents));
     }
-    final Delta delta = Delta()..insert("Content...\n");
+    final Delta delta = Delta()..insert("Content... AAA ...\n &&&& .... \n pppp\n");
     return NotusDocument.fromDelta(delta);
   }
 

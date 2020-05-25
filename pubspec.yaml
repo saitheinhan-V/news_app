@@ -45,6 +45,7 @@ dependencies:
   cached_network_image: ^2.1.0+1
   file_picker: ^1.9.0+1
   flutter_absolute_path: ^1.0.6
+  markdown: ^2.1.3
 
 
 

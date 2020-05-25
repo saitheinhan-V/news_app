@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:news/api.dart';
 import 'package:news/home/post/moment_page.dart';
 import 'package:news/home/post/three_page.dart';
 import 'package:news/models/follow.dart';
@@ -91,7 +92,7 @@ class _FollowPageContentState extends State<FollowPageContent> {
       List<Following> followingLists=new List<Following>();
       for(var i=0;i<followList.length;i++){
         Follow follow=followList[i];
-        var res= await http.post("http://192.168.0.119:3000//api/user/info",body: {
+        var res= await http.post(Api.USER_INFO_URL,body: {
           "Userid" : follow.userID.toString(),
         });
         print(res.body.toString());
@@ -120,7 +121,7 @@ class _FollowPageContentState extends State<FollowPageContent> {
 
   Future<List<Follow>> getFollower(int userId) async{
     List<Follow> follows= List<Follow>();
-    var response=await http.post("http://192.168.0.119:3000//api/following",body: {
+    var response=await http.post(Api.GETFOLLOWING_URL,body: {
       "Followerid" : userId.toString(),
     });
     if(response.statusCode ==200){
@@ -139,7 +140,7 @@ class _FollowPageContentState extends State<FollowPageContent> {
     List<Moment> moments=[];
     for(int i=0;i<followings.length;i++){
       Following following=followings[i];
-      var response= await http.post("http://192.168.0.119:3000//api/all/momentpost",
+      var response= await http.post(Api.GETMOMENTPOST_URL,
           body: {
             'Userid' : following.userID.toString(),
           });
@@ -307,8 +308,17 @@ class _FollowPageContentState extends State<FollowPageContent> {
                     future: getMoment(followingList),
                     builder: (context , snapshot){
                       if(snapshot.hasError){
-                        return Container(
-                          child: Text('Error: ${snapshot.error}'),
+                        return Center(
+                          child: Container(
+                            margin: EdgeInsets.only(top: 50.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.error,size: 50.0,color: Colors.grey,),
+                                SizedBox(height: 10.0,),
+                                Text('Network Error, check your connection!',style: TextStyle(color: Colors.red,fontSize: 15.0,fontWeight: FontWeight.bold),),
+                              ],
+                            ),
+                          ),
                         );
                       }else if(snapshot.hasData){
                         List<Moment> moments=snapshot.data;
@@ -336,33 +346,6 @@ class _FollowPageContentState extends State<FollowPageContent> {
               ],
             ),
           ),
-//          child: CustomScrollView(
-//            slivers: <Widget>[
-//              SliverList(
-//                delegate: SliverChildListDelegate(
-//                  [
-//                    FollowingContent(followings: followingList,),
-//                    Container(
-//                      height: 5.0,
-//                      color: Colors.black12,
-//                    ),
-//                  ],
-//                ),
-//              ),
-//              SliverList(
-//                delegate: SliverChildListDelegate(
-//                  followingList.length ==0? [
-//                    Container(
-//                      height: 200.0,
-//                      child: Center(
-//                        child: Text("Follow people to see their posts"),
-//                      ),
-//                    ),
-//                  ]: getDelegate(momentList),
-//                ),
-//              ),
-//            ],
-//          ),
         ),
         onRefresh: refreshList,
       ),
@@ -443,7 +426,7 @@ class _FollowingContentState extends State<FollowingContent> {
       List<Following> followingLists=new List<Following>();
       for(var i=0;i<followList.length;i++){
         Follow follow=followList[i];
-        var res= await http.post("http://192.168.0.119:3000//api/user/info",body: {
+        var res= await http.post(Api.USER_INFO_URL,body: {
           "Userid" : follow.userID.toString(),
         });
         print(res.body.toString());
@@ -472,7 +455,7 @@ class _FollowingContentState extends State<FollowingContent> {
 
   Future<List<Follow>> getFollower(int userId) async{
     List<Follow> follows= List<Follow>();
-    var response=await http.post("http://192.168.0.119:3000//api/following",body: {
+    var response=await http.post(Api.GETFOLLOWING_URL,body: {
       "Followerid" : userId.toString(),
     });
     if(response.statusCode ==200){

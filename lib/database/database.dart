@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:news/models/category.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/models/following.dart';
@@ -137,6 +138,17 @@ class SQLiteDbProvider {
 
   }
 
+  Future<Following> getFollowingById(int id) async{
+    final db=await database;
+    var result= await db.rawQuery("SELECT * FROM Following WHERE userID = $id ");
+    if(result.length >0){
+      return new Following.fromMap(result.first);
+    }
+    else{
+      return null;
+    }
+  }
+
   Future<List<Token>> getToken() async{
     final db = await database;
     List<Map> results= await db.query("Token", columns: Token.columns);
@@ -204,6 +216,11 @@ class SQLiteDbProvider {
   deleteFollower() async{
     final db= await database;
     db.delete("Follow");
+  }
+
+  Future<int> deleteFollowingById(int id) async {
+    final db= await database;
+    return await db.delete("Following", where: 'userID = ?', whereArgs: [id]);
   }
 
   deleteFollowing() async{

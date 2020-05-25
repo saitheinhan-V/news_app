@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:news/api.dart';
 import 'package:news/models/following.dart';
 import 'package:news/models/user.dart';
 import 'package:news/profile/register/login_page.dart';
@@ -28,7 +29,6 @@ class _ProfilePageState extends State<ProfilePage> {
   List<User> userList=new List<User>();
   List<Follow> followerList=new List<Follow>();
   List<Following> followingList = new List<Following>();
-  var baseUrl="http://192.168.0.110:8081/user";
 
   @override
   void initState() {
@@ -77,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<int> getTotalPost(int id) async{
     int count=0;
-    var response= await http.post("http://192.168.0.119:3000//api/userpost/count",
+    var response= await http.post(Api.USERPOST_COUNT_URL,
     body: {
       'Userid' : id.toString(),
     });
@@ -121,16 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
 //  }
 
   insertFollower(int id) async{
-//    var response=await http.post(baseUrl+"/"+id.toString());
-//    var data=jsonDecode(response.body);
-//    print('Data Length===='+data.length.toString());
-//    SQLiteDbProvider.db.deleteFollower();
-//    for(int j=0;j<data.length;j++){
-//      //User user=User(j,'null','000','000');
-//      Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
-//      SQLiteDbProvider.db.insertFollower(follow);
-//    }
-    var response=await http.post("http://192.168.0.119:3000//api/follower",
+    var response=await http.post(Api.GETFOLLOWER_URL,
         body: {
           "Userid" : id.toString(),
         }
@@ -170,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<List<Follow>> getFollower(int userId) async{
     List<Follow> follows= List<Follow>();
-    var response=await http.post("http://192.168.0.119:3000//api/following",body: {
+    var response=await http.post(Api.GETFOLLOWING_URL,body: {
       "Followerid" : userId.toString(),
     });
     if(response.statusCode ==200){
@@ -194,15 +185,13 @@ class _ProfilePageState extends State<ProfilePage> {
       List<Following> followingLists=new List<Following>();
       for(var i=0;i<followList.length;i++){
         Follow follow=followList[i];
-        var res= await http.post("http://192.168.0.119:3000//api/user/info",body: {
+        var res= await http.post(Api.USER_INFO_URL,body: {
           "Userid" : follow.userID.toString(),
         });
         print(res.body.toString());
         if(res.statusCode ==200){
           var body=jsonDecode(res.body);
           var dataUser=body['data'];
-          //print('Data <<<<<<<'+dataUser.length.toString());
-          //followers.add(dataUser['Username']);
           Following following=new Following(dataUser['Userid'],dataUser['Username'],dataUser['Phone'],dataUser['Password'],
               dataUser['Createdate'],dataUser['Profilepic'],dataUser['Imei'],dataUser['Qq'],dataUser['Sex'],dataUser['Email'],
               dataUser['Address'],dataUser['Birthday'],dataUser['Introduction']);

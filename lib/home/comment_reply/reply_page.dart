@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:news/api.dart';
+import 'package:news/database/database.dart';
 import 'package:news/home/comment_reply//liked_profile_list.dart';
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:news/models/check_time.dart';
+import 'package:news/models/comment.dart';
+import 'package:news/models/following.dart';
+import 'package:news/models/reply.dart';
+import 'package:news/models/user.dart';
 import 'package:news/profile/user_profile_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ReplyPage extends StatefulWidget {
+  final Comment comment;
+  final bool liked;
+  ReplyPage({Key key,this.comment,this.liked});
+
   @override
   _ReplyPageState createState() => _ReplyPageState();
 }
@@ -17,8 +30,71 @@ class _ReplyPageState extends State<ReplyPage> {
   bool isShowSticker=false;
   bool isWriting=false;
   bool isFollowed=false;
+  bool isLoading=true;
   bool isLiked=false;
+  int commentLikeCount=0;
+
   int count=100;
+  int userID=0;
+  int commentID=0;
+
+  List<Reply> replyList=[];
+  List<User> userList=[];
+  List<Following> followingList=[];
+
+  String username;
+  String date;
+
+  DateTime created;
+  DateTime now=DateTime.now();
+
+  Comment comment;
+  Following following;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    comment=widget.comment;
+    isLiked=widget.liked;
+    commentLikeCount=comment.likeCount;
+    commentID=comment.commentID;
+
+    getAllReply(comment.commentID).then((value){
+      setState(() {
+        replyList=value;
+        isLoading=false;
+      });
+    });
+
+    checkUser().then((value){
+      setState(() {
+        userList=value;
+        if(userList.length != 0){
+          userID=userList[0].userID;
+          username=userList[0].userName;
+        }
+      });
+    });
+
+    getFollowing(comment.userID).then((value){
+      setState(() {
+        following=value;
+        if(following==null){
+          isFollowed=false;
+        }else{
+          isFollowed=true;
+        }
+      });
+    });
+
+    var arr= comment.createDate.split('-');
+    var arr1= arr[2].split(':');
+    var arr2= arr1[0].split('T');
+    created= DateTime(int.parse(arr[0]),int.parse(arr[1]),int.parse(arr2[0]),int.parse(arr2[1]),int.parse(arr1[1]));
+
+    date=Check().checkDate(created, now);
+  }
 
   @override
   void dispose() {
@@ -55,6 +131,141 @@ class _ReplyPageState extends State<ReplyPage> {
     });
   }
 
+  Future<Following> getFollowing(int id) async{
+    Following following= await SQLiteDbProvider.db.getFollowingById(id);
+    return following;
+  }
+
+  Future<bool> checkLike(int user_id, int post_id) async{
+    bool checked;
+    var res= await http.post(Api.LIKE_CHECK_URL,
+        body: {
+          'Userid' : user_id.toString(),
+          'Postid' : post_id.toString(),
+          'Field' : "comment",
+        });
+    if(res.statusCode ==200){
+      var data=jsonDecode(res.body);
+      if(data['data']['Id'] == 0){
+        checked=false;
+      }else{
+        checked=true;
+      }
+    }
+    return checked;
+  }
+
+  Future<List<Reply>> getAllReply(int id) async{
+    List<Reply> replies=[];
+    var res= await http.post(Api.GET_REPLY_URL,
+    body: {
+      'Commentid' : id.toString(),
+    });
+    if(res.statusCode==200){
+      var body= jsonDecode(res.body);
+      var data=body['data'];
+      for(int i=0;i<data.length;i++){
+        Reply reply=new Reply(data[i]['Replyid'],data[i]['Commentid'],data[i]['Userid'],data[i]['Username'],data[i]['Text'],data[i]['Likecount'],data[i]['Createdate']);
+        replies.add(reply);
+      }
+    }
+    return replies;
+  }
+
+  newReply(int commentid,int userid,String name,String text) async{
+    addReply(commentid,userid, name, text).then((value){
+      setState(() {
+        Reply reply=value;
+        replyList.add(reply);
+      });
+    });
+  }
+
+  Future<Reply> addReply(int comment_id,int user_id,String username,String content) async{
+    var res = await http.post(Api.ADD_REPLY_URL,
+        body: {
+          'Commentid' : comment_id.toString(),
+          'Userid' : user_id.toString(),
+          'Username' : username,
+          'Text' : content,
+          'Likecount' : "0",
+        });
+    print("Add success");
+    var body=jsonDecode(res.body);
+    print(body);
+    var data=body['data'];
+    Reply reply=new Reply(data['Replyid'],data['Commentid'],data['Userid'],data['Username'],data['Text'],data['Likecount'],data['Createdate']);
+    return reply;
+  }
+
+  List<Widget> getDelegate() {
+    List<Widget> _generalDelegates = List<Widget>();
+    for (var i = 0; i < replyList.length; i++) {
+      Reply reply=replyList[i];
+      _generalDelegates.add(ReplyContent(reply: reply,));
+    }
+    return _generalDelegates;
+  }
+
+  Future<List<User>> checkUser() async{
+    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
+    List<User> userLists= await futureList;
+    return userLists;
+  }
+
+  updateCommentLike(int commentID, int likeCount) async{
+    var response = await http.put(Api.LIKE_COMMENT_UPDATE_URL,
+        body: {
+          'Commentid' : commentID.toString(),
+          'Likecount' : likeCount.toString(),
+        });
+    if(response.statusCode ==200){
+      print("Update success");
+    }
+  }
+
+  insertLikeRecord(int user_id,int post_id) async{
+    var response= await http.post(Api.LIKERECORD_URL,
+        body: {
+          'Userid' : user_id.toString(),
+          'Postid' : post_id.toString(),
+          'Field' : "comment",
+        });
+    if(response.statusCode ==200){
+      print("record success");
+    }
+  }
+
+  deleteLikeRecord(int user_id,int post_id) async{
+    var response= await http.delete(Api.DELETELIKE_URL+user_id.toString()+"/"+post_id.toString()+"/"+"comment");
+    if(response.statusCode ==200){
+      print('delete success');
+    }
+  }
+
+  insertFollower(int userid,int followerid) async{
+    var res= await http.post(Api.ADD_FOLLOWER_URL,
+    body: {
+      "Userid" : userid.toString(),
+      "Followerid" : followerid.toString(),
+    });
+    if(res.statusCode ==200){
+      var body=jsonDecode(res.body);
+      Map map=body['data'];
+      Following following=Following.fromJson(map);
+      SQLiteDbProvider.db.insertFollowing(following);
+    }
+  }
+
+  deleteFollower(int userid,int followerid) async{
+    var res = await http.delete(Api.DELETE_FOLLOWER_URL+userid.toString()+"/"+followerid.toString());
+    if(res.statusCode ==200){
+      print('delete success');
+      int result= await SQLiteDbProvider.db.deleteFollowingById(userid);
+      print(result.toString());
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +273,7 @@ class _ReplyPageState extends State<ReplyPage> {
       appBar: AppBar(
         title: Text('Reply'),
       ),
-      body: Column(
+      body: !isLoading? Column(
         children: [
           Flexible(
             child: CustomScrollView(
@@ -72,8 +283,8 @@ class _ReplyPageState extends State<ReplyPage> {
                     [
                       profileContent(),
                       Container(
-                        padding: EdgeInsets.only(left: 70.0,right: 10.0,bottom: 5.0),
-                        child: Text('An example of a bee sucking honey and bring those to their home and I fell very awesome with natural and love to watch those kind of document',
+                        padding: EdgeInsets.only(left: 70.0,right: 10.0,bottom: 10.0),
+                        child: Text(comment.text,
                           style: TextStyle(
                             color: Colors.black,
                             height: 1.5,
@@ -88,7 +299,7 @@ class _ReplyPageState extends State<ReplyPage> {
                           children: <Widget>[
                             Expanded(
                               flex: 6,
-                              child: Row(
+                              child: commentLikeCount !=0? Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -106,7 +317,7 @@ class _ReplyPageState extends State<ReplyPage> {
                                     ),
                                   ),
                                   SizedBox(width: 3.0,),
-                                  GestureDetector(
+                                  commentLikeCount>=2? GestureDetector(
                                     onTap: (){},
                                     child: Container(
                                       height: 25.0,width: 25.0,
@@ -118,7 +329,7 @@ class _ReplyPageState extends State<ReplyPage> {
                                           )
                                       ),
                                     ),
-                                  ),
+                                  ) : Container(),
                                   Container(
                                     height: 25.0,
                                     padding: EdgeInsets.only(left: 5.0,right: 5.0,),
@@ -133,7 +344,7 @@ class _ReplyPageState extends State<ReplyPage> {
                                             });
                                           },
                                           child: Center(
-                                            child: Text('20 people like',
+                                            child: Text('${commentLikeCount} people like',
                                               style: TextStyle(
                                                 //color: Colors.grey,
                                                 fontSize: 10.0,
@@ -155,7 +366,7 @@ class _ReplyPageState extends State<ReplyPage> {
                                     ),
                                   ),
                                 ],
-                              ),
+                              ): Container(),
                             ),
                             Expanded(
                               flex: 3,
@@ -169,16 +380,19 @@ class _ReplyPageState extends State<ReplyPage> {
                                         setState(() {
                                           if(isLiked){
                                             isLiked=false;
-                                            count=count-1;
+                                            commentLikeCount=commentLikeCount-1;
+                                            deleteLikeRecord(userID, comment.commentID);
                                           }else{
                                             isLiked=true;
-                                            count=count+1;
+                                            commentLikeCount=commentLikeCount+1;
+                                            insertLikeRecord(userID, comment.commentID);
                                           }
+                                          updateCommentLike(comment.commentID,commentLikeCount);
                                         });
                                     },
                                   ),
                                   SizedBox(width: 3.0,),
-                                  Text(count.toString(),style: TextStyle(color: Colors.grey,fontSize: 12.0),)
+                                  Text(commentLikeCount.toString(),style: TextStyle(color: Colors.grey,fontSize: 12.0),)
                                 ],
                               ),
                             ),
@@ -189,26 +403,45 @@ class _ReplyPageState extends State<ReplyPage> {
                         padding: EdgeInsets.only(left: 10.0,right: 10.0),
                         child: Divider(height: 5.0,color: Colors.grey,),
                       ),
-                      Container(
-                        padding: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 10.0),
+                      replyList.length!=0? Container(
+                        margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 10.0),
                         child: Row(
                           children: <Widget>[
                             Container(width: 3.0,
                             height: 25.0,
                               color: Colors.blue,
                             ),
-                            SizedBox(width: 5.0,),
-                            Text('All Reply'),
+                            SizedBox(width: 20.0,),
+                            Text('All Reply',),
                           ],
                         ),
-                      ),
-                      _buildReplyMessage(),
+                      ) : Container(),
+                      //_buildReplyMessage(),
                     ],
                   ),
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    getDelegate(),
+                    replyList.length!=0 ? getDelegate() :
+                    [
+                      Container(
+                        height: MediaQuery.of(context).size.height,
+                        margin: EdgeInsets.only(top: 50.0),
+                        child: Center(
+                          child: Column(
+                            children: <Widget>[
+                              Icon(Icons.message,size: 50.0,color: Colors.grey,),
+                              Text('No reply yet...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 15.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -219,17 +452,11 @@ class _ReplyPageState extends State<ReplyPage> {
           ),
           isShowSticker ? buildSticker() : Container(),
         ],
-      ),
+      )
+      : Center(
+        child: CircularProgressIndicator(),
+    ),
     );
-  }
-
-  List<Widget> getDelegate() {
-    List<Widget> _generalDelegates = List<Widget>();
-    //_generalDelegates.clear();
-    for (var i = 0; i < 5; i++) {
-      _generalDelegates.add(_buildReplyMessage());
-    }
-    return _generalDelegates;
   }
 
   Widget buildSticker() {
@@ -254,7 +481,7 @@ class _ReplyPageState extends State<ReplyPage> {
         height: 60.0,
         width: double.infinity,
         decoration: BoxDecoration(
-          //border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
+          border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
             color: Colors.white),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -283,7 +510,7 @@ class _ReplyPageState extends State<ReplyPage> {
                         isDense: true,
                         contentPadding: EdgeInsets.all(10.0),
                         filled: true,
-                        hintText: "Enter Comment...",
+                        hintText: "Enter Reply...",
                         hintStyle: TextStyle(color: Colors.grey),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
@@ -320,14 +547,17 @@ class _ReplyPageState extends State<ReplyPage> {
                     setState(() {
                       if(isLiked){
                         isLiked=false;
-                        count=count-1;
+                        commentLikeCount=commentLikeCount-1;
+                        deleteLikeRecord(userID, commentID);
                       }else{
                         isLiked=true;
-                        count=count+1;
+                        commentLikeCount=commentLikeCount+1;
+                        insertLikeRecord(userID, commentID);
                       }
+                      updateCommentLike(commentID, commentLikeCount);
                     });
                   },),
-                count != 0 ? new Positioned(
+                commentLikeCount != 0 ? new Positioned(
                   right: 0,
                   top: 5,
                   child: new Container(
@@ -340,10 +570,10 @@ class _ReplyPageState extends State<ReplyPage> {
                       minHeight: 14,
                     ),
                     child: Text(
-                      '$count',
+                      '$commentLikeCount',
                       style: TextStyle(
                         color: Colors.black54,
-                        fontSize: 8,
+                        fontSize: 10,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -366,6 +596,7 @@ class _ReplyPageState extends State<ReplyPage> {
                     setState(() {
                       //comment.add(_textEditingController.text);
                       isWritingTo(false);
+                      newReply(commentID,userID,username,_textEditingController.text);
                       _textEditingController.clear();
                       hideStickerContainer();
                       hideKeyboard();
@@ -710,7 +941,7 @@ class _ReplyPageState extends State<ReplyPage> {
                       });
                     },
                     child: Container(
-                      child: Text('Sai Thein Han',
+                      child: Text(comment.userName,
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 15.0,
@@ -725,7 +956,7 @@ class _ReplyPageState extends State<ReplyPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Text('3 hours ago',
+                        Text(date,
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 10.0,
@@ -740,23 +971,21 @@ class _ReplyPageState extends State<ReplyPage> {
           ),
           Expanded(
             flex: 3,
-            child: GestureDetector(
+            child: (comment.userID!= userID)? GestureDetector(
               onTap: (){
                 setState(() {
                     if(isFollowed){
                       isFollowed=false;
+                      deleteFollower(comment.userID,userID);
                     }else{
                       isFollowed=true;
+                      insertFollower(comment.userID,userID);
                     }
-
                 });
               },
               child: Container(
                 height: 20.0,
-                //padding: EdgeInsets.only(right: .0),
-                //width: MediaQuery.of(context).size.width*(10/100),
                 child: Row(
-                  //mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     Container(
                       height: 20.0,
@@ -797,10 +1026,289 @@ class _ReplyPageState extends State<ReplyPage> {
                   ],
                 ),
               ),
-            ),
+            )
+            : Container(),
           ),
         ],
       ),
     );
   }
 }
+
+class ReplyContent extends StatefulWidget {
+  final Reply reply;
+  ReplyContent({Key key,this.reply});
+
+  @override
+  _ReplyContentState createState() => _ReplyContentState();
+}
+
+class _ReplyContentState extends State<ReplyContent> {
+
+  Reply reply;
+
+  int likeCount=0;
+  int userID=0;
+
+  bool isLiked=false;
+
+  List<User> userList=[];
+
+  String date;
+
+  DateTime created;
+  DateTime now=DateTime.now();
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    reply=widget.reply;
+    likeCount=reply.likeCount;
+
+    checkUser().then((value){
+      userList=value;
+      if(userList.length != 0){
+        userID=userList[0].userID;
+        checkLike(userID, reply.replyID).then((value){
+          setState(() {
+            isLiked=value;
+          });
+        });
+      }
+    });
+
+    var arr= reply.createDate.split('-');
+    var arr1= arr[2].split(':');
+    var arr2= arr1[0].split('T');
+    created= DateTime(int.parse(arr[0]),int.parse(arr[1]),int.parse(arr2[0]),int.parse(arr2[1]),int.parse(arr1[1]));
+
+    date=Check().checkDate(created, now);
+  }
+
+  Future<List<User>> checkUser() async{
+    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
+    List<User> userLists= await futureList;
+    return userLists;
+  }
+
+  Future<bool> checkLike(int user_id, int post_id) async{
+    bool checked;
+    var res= await http.post(Api.LIKE_CHECK_URL,
+        body: {
+          'Userid' : user_id.toString(),
+          'Postid' : post_id.toString(),
+          'Field' : "reply",
+        });
+    if(res.statusCode ==200){
+      var data=jsonDecode(res.body);
+      if(data['data']['Id'] == 0){
+        checked=false;
+      }else{
+        checked=true;
+      }
+    }
+    return checked;
+  }
+
+  removeReply(int id) async{
+    var response= await http.delete(Api.DELETE_REPLY_URL+id.toString());
+    if(response.statusCode ==200){
+      print("Delete comment success");
+    }
+  }
+
+  updateReplyLike(int replyID, int likeCount) async{
+    var response = await http.put(Api.UPDATE_REPLY_LIKE_URL,
+        body: {
+          'Replyid' : replyID.toString(),
+          'Likecount' : likeCount.toString(),
+        });
+    if(response.statusCode ==200){
+      print("Update success");
+    }
+  }
+
+  insertLikeRecord(int user_id,int post_id) async{
+    var response= await http.post(Api.LIKERECORD_URL,
+        body: {
+          'Userid' : user_id.toString(),
+          'Postid' : post_id.toString(),
+          'Field' : "reply",
+        });
+    if(response.statusCode ==200){
+      print("record success");
+    }
+  }
+
+  deleteLikeRecord(int user_id,int post_id) async{
+    var response= await http.delete(Api.DELETELIKE_URL+user_id.toString()+"/"+post_id.toString()+"/"+"reply");
+    if(response.statusCode ==200){
+      print('delete success');
+    }
+  }
+
+  deleteReplyLikeRecord(int id) async{
+    var res = await http.delete(Api.DELETE_REPLY_LIKE_URL+id.toString()+"/"+"reply");
+    if(res.statusCode ==200){
+      print("delete success");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          ListTile(
+            leading: Container(
+              height: 40.0,
+              width: 40.0,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100.0,),
+                  image: DecorationImage(
+                    image: AssetImage('assets/panda.jpg'),
+                    fit: BoxFit.cover,
+                  )
+              ),
+            ),
+            title: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: Text(reply.userName),
+                ),
+                Expanded(
+                  flex: 5,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      GestureDetector(
+                          child: Icon(Icons.thumb_up,color: isLiked? Colors.blue : Colors.grey,size: 15.0,),
+                      onTap: (){
+                            setState(() {
+                              if(isLiked){
+                                isLiked=false;
+                                likeCount=likeCount-1;
+                                deleteLikeRecord(userID,reply.replyID);
+                              }else{
+                                isLiked=true;
+                                likeCount=likeCount+1;
+                                insertLikeRecord(userID, reply.replyID);
+                              }
+                              updateReplyLike(reply.replyID,likeCount);
+                            });
+                      },),
+                      SizedBox(width: 3.0,),
+                      Text(likeCount.toString(),style: TextStyle(color: Colors.grey,fontSize: 12.0),)
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Container(
+              padding: EdgeInsets.only(top: 5.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  GestureDetector(
+                    onLongPress: (){
+                      if(reply.userID == userID){
+                        showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext bc){
+                              return Container(
+                                child: new Wrap(
+                                  children: <Widget>[
+                                    new ListTile(
+                                        leading: new Icon(Icons.reply),
+                                        title: new Text('Reply'),
+                                        onTap: () => {}
+                                    ),
+                                    new ListTile(
+                                      leading: new Icon(Icons.delete),
+                                      title: new Text('Delete'),
+                                      onTap: () {
+                                        setState(() {
+                                          removeReply(reply.replyID);
+                                          deleteReplyLikeRecord(reply.replyID);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                        );
+                      }
+                    },
+                    child: Text(reply.text,
+                      style: TextStyle(
+                        color: Colors.black,
+                        height: 1.5,
+                        fontSize: 15.0,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(top: 5.0,bottom: 5.0),
+                    child: Row(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Text(date,
+                              style: TextStyle(
+                                  fontSize: 10.0,
+                                  color: Colors.black
+                              ),
+                            ),
+                            SizedBox(width: 10.0,),
+                            GestureDetector(
+                              onTap: (){
+                                setState(() {
+
+                                });
+                              },
+                              child: Container(
+                                height: 20.0,
+                                // width: 80.0,
+                                padding: EdgeInsets.only(left: 5.0,right: 5.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.black12,
+                                  borderRadius: BorderRadius.circular(10.0,),
+                                ),
+                                child: Center(
+                                  child: Text('Reply',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 10.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(left: 70.0,right: 10.0),
+            color: Colors.grey,
+            height: 0.5,
+          ),
+        ],
+      ),
+    );
+  }
+}
+

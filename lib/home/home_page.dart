@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:news/api.dart';
 import 'package:news/home/custom_post/article_post.dart';
 import 'package:news/home/page_details/none_page_details.dart';
 import 'package:news/models/category.dart';
@@ -132,7 +133,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin{
     List<Category> categoryLists=[];
 //    return categoryList;
     //List<Category> categoryLists= await SQLiteDbProvider.db.getCategory();
-      var res = await http.get("http://192.168.0.119:3000//api/category");
+      var res = await http.get(Api.GETCATEGORY_URL);
       if(res.statusCode ==200){
         var body= jsonDecode(res.body);
         var data=body['data']['category'];

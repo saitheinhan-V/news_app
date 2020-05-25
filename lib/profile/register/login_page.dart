@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:news/api.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/profile/register/register_page.dart';
 import 'dart:convert';
@@ -211,7 +212,6 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
   TextEditingController passwordController=TextEditingController();
   ProgressDialog progressDialog;
   User user;
-  //var baseUrl="http://192.168.0.110:8081/user";
 
   void submitRegisterForm() {
     if (loginFormKey.currentState.validate()) {
@@ -439,9 +439,8 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
   }
 
   Future<User> _getUserInfo(String token) async{
-    var authorizeUrl="http://192.168.0.119:3000//api/auth/info";
 
-    var response=await http.get(authorizeUrl,headers: {
+    var response=await http.get(Api.INFO_URL,headers: {
       'Authorization' : 'Bearer $token'
     });
       var dataUser=jsonDecode(response.body);
@@ -453,10 +452,9 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
   }
 
   _logIn(String phone,String password) async{
-    var loginUrl="http://192.168.0.119:3000//api/auth/login";
 
     progressDialog.show();
-    var res= await http.post(loginUrl,body: {
+    var res= await http.post(Api.LOGIN_URL,body: {
       "Phone" : phone,
       "Password" : password,
     });

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news/api.dart';
 import 'package:news/models/follow.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:http/http.dart' as http;
@@ -111,7 +112,6 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
   TextEditingController phoneController=TextEditingController();
   TextEditingController passwordController=TextEditingController();
   ProgressDialog pr;
-  var baseUrl="http://192.168.0.110:8081/user";
 
 
   void submitRegisterForm() {
@@ -135,15 +135,6 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     }
   }
 
-  Future<List> checkUser(String text1,String text2,String text3) async{
-    var loginUrl='https://firstgitlesson.000webhostapp.com/account_login.php';
-    var response= await http.post(loginUrl,body: {
-      "phone" : text2,
-      "password" : text3,
-    });
-    var data=jsonDecode(response.body);
-    return data;
-  }
 
 //  insertFollower(int id) async{
 ////    var response=await http.post(baseUrl+"/"+id.toString());
@@ -173,23 +164,10 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 //    }
 //  }
 
-  Future<List<User>> getUser(String ph,String pw) async{
-    List<User> userLists=List<User>();
-    var res= await http.post(baseUrl+"/"+ph+"/"+pw);
-    if(res.statusCode == 200){
-      var data=jsonDecode(res.body);
-      if(data.length !=0){
-        User user=User(data['Userid'],data['Username'],data['Password'],data['Phone']);
-        userLists.add(user);
-      }
-    }
-    return userLists;
-  }
 
   Future<User> _getUserInfo(String token) async{
-    var authorizeUrl="http://192.168.0.119:3000//api/auth/info";
 
-    var response=await http.get(authorizeUrl,headers: {
+    var response=await http.get(Api.INFO_URL,headers: {
       'Authorization' : 'Bearer $token'
     });
     var dataUser=jsonDecode(response.body);
@@ -224,9 +202,8 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
 
   _signUp(String name, String phoneNo, String passWord) async{
     pr.show();
-    var registerUrl="http://192.168.0.119:3000//api/auth/register";
 
-    var res= await http.post(registerUrl,body: {
+    var res= await http.post(Api.REGISTER_URL,body: {
       "Username" : name,
       "Phone" : phoneNo,
       "Password" : passWord,

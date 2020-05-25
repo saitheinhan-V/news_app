@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:news/api.dart';
+import 'package:news/database/database.dart';
 import 'package:news/home/page_details/moment_page_details.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -42,6 +44,7 @@ class _MomentPageState extends State<MomentPage> {
   int recommendHeight=200;
   int like=0;
   int comment=0;
+  int userID;
 
   bool isFollowed=false;
   bool isExpanded=false;
@@ -56,21 +59,8 @@ class _MomentPageState extends State<MomentPage> {
   TimeOfDay releaseTime = TimeOfDay(hour: 8, minute: 10);
 
   CarouselSlider carouselSlider;
-  int _current = 0;
-  int _count = 1;
-  int _total = 0;
-  List list = [
-    'https://images.unsplash.com/photo-1502117859338-fd9daa518a9a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    'https://images.unsplash.com/photo-1554321586-92083ba0a115?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    'https://images.unsplash.com/photo-1536679545597-c2e5e1946495?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    /*'https://images.unsplash.com/photo-1543922596-b3bbaba80649?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    'https://images.unsplash.com/photo-1502943693086-33b5b1cfdf2f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80',
-    'https://images.unsplash.com/photo-1543922596-b3bbaba80649?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    'https://images.unsplash.com/photo-1543922596-b3bbaba80649?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-    'https://images.unsplash.com/photo-1502943693086-33b5b1cfdf2f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80',*/
-  ];
-  //List imgList=['minion.jpg','panda.jpg','adv3.jpg','adv5.jpg','adv3.jpg','adv4.jpg','adv1.jpg','minion.jpg','panda.jpg'];
   List<String> imgList=[];
+  List<User> userList=[];
 
   List<T> map<T>(List list, Function handler) {
     List<T> result = [];
@@ -85,6 +75,29 @@ class _MomentPageState extends State<MomentPage> {
     // TODO: implement initState
     super.initState();
     moment=widget.moment;
+    checkUser().then((value){
+      userList=value;
+      if(userList.length != 0){
+        userID=userList[0].userID;
+        print("Userid=======**"+userID.toString());
+        print("Mometnid====***"+moment.momentPostID.toString());
+        checkLike(userID, moment.momentPostID).then((value){
+          setState(() {
+            isLiked=value;
+            print("Like=========="+ isLiked.toString());
+            print("Userid======="+userID.toString());
+            print("Mometnid===="+moment.momentPostID.toString());
+          });
+        });
+      }
+    });
+
+    getCommentCount(moment.momentPostID).then((value){
+      setState(() {
+        comment=value;
+      });
+    });
+
     getUserInfo(moment.userID).then((value){
       setState(() {
         following=value;
@@ -107,9 +120,27 @@ class _MomentPageState extends State<MomentPage> {
     totalHeight=profileHeight+captionHeight+imgHeight+likeHeight+bottomHeight+dividerHeight;
   }
 
+  Future<int> getCommentCount(int id) async{
+    int count=0;
+    var res =await http.post(Api.GET_COMMENT_COUNT_URL,
+    body: {
+      'Postid' : id.toString(),
+    });
+    if(res.statusCode==200){
+      var data=jsonDecode(res.body);
+      count= data['count'];
+    }
+    return count;
+  }
+
+  Future<List<User>> checkUser() async{
+    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
+    List<User> userLists= await futureList;
+    return userLists;
+  }
+
   Future<Following> getUserInfo(int id) async{
-    var url="http://192.168.0.119:3000//api/user/info";
-    var res=await http.post(url,
+    var res=await http.post(Api.USER_INFO_URL,
     body: {
       'Userid' : id.toString(),
     });
@@ -119,14 +150,52 @@ class _MomentPageState extends State<MomentPage> {
     return following;
   }
 
+  Future<bool> checkLike(int user_id, int post_id) async{
+    bool checked;
+    var res= await http.post(Api.LIKE_CHECK_URL,
+    body: {
+      'Userid' : user_id.toString(),
+      'Postid' : post_id.toString(),
+      'Field' : "moment",
+    });
+    if(res.statusCode ==200){
+      var data=jsonDecode(res.body);
+      if(data['data']['Id'] == 0){
+        checked=false;
+      }else{
+        checked=true;
+      }
+    }
+    return checked;
+  }
+
   updateLike(int id,int count) async{
-    var response= await http.put("http://192.168.0.119:3000//api/update/like",
+    var response= await http.put(Api.LIKECOUNT_UPDATE_URL,
     body: {
       'Momentpostid' : id.toString(),
       'Likecount' : count.toString(),
     });
     if(response.statusCode ==200){
       print("update success");
+    }
+  }
+
+  insertLikeRecord(int user_id,int post_id) async{
+    var response= await http.post(Api.LIKERECORD_URL,
+    body: {
+      'Userid' : user_id.toString(),
+      'Postid' : post_id.toString(),
+      'Field' : "moment",
+    });
+    if(response.statusCode ==200){
+      print("record success");
+    }
+  }
+
+  deleteLikeRecord(int user_id,int post_id) async{
+    var response= await http.delete(Api.DELETELIKE_URL+user_id.toString()+"/"+post_id.toString()+"/"+"moment");
+    if(response.statusCode ==200){
+      print('delete success');
     }
   }
 
@@ -382,15 +451,17 @@ class _MomentPageState extends State<MomentPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         GestureDetector(
-                            child: Icon(Icons.thumb_up,size: 15.0,color: isLiked? Colors.blue:Colors.grey,),
+                            child: Icon(Icons.thumb_up,size: 15.0,color: isLiked? Colors.blue : Colors.grey,),
                         onTap: (){
                               setState(() {
                                 if(isLiked){
                                   isLikedTo(false);
                                   like=like-1;
+                                  deleteLikeRecord(userID,moment.momentPostID);
                                 }else{
                                   isLikedTo(true);
                                   like=like+1;
+                                  insertLikeRecord(userID,moment.momentPostID);
                                 }
                                 updateLike(moment.momentPostID,like);
                               });
@@ -412,7 +483,7 @@ class _MomentPageState extends State<MomentPage> {
                     onTap: (){
                       setState(() {
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => CommentPage())
+                            MaterialPageRoute(builder: (context) => CommentPage(momentID: moment.momentPostID,))
                         );
                       });
                     },
