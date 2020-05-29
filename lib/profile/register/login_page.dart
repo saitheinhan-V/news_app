@@ -149,54 +149,6 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 
-//class AppBarDemo extends StatelessWidget {
-//  @override
-//  Widget build(BuildContext context) {
-//    return Stack(
-//      alignment: AlignmentDirectional.center,
-//      children: <Widget>[
-//        Image.asset(
-//          "assets/profile/triangle.png",
-//          width: double.infinity,
-//          height: 130.0,
-//          fit: BoxFit.fill,
-//        ),
-//        Positioned(
-//          top: 35.0,
-//          left: 20.0,
-//          child: Row(
-//            children: <Widget>[
-//              Icon(
-//                Icons.arrow_back_ios,
-//                size: 30.0,
-//              ),
-//              Text(
-//                'Back',
-//                style: TextStyle(fontSize: 20.0),
-//              ),
-//            ],
-//          ),
-//        ),
-//        Positioned(
-//          top: 35.0,
-//          right: 20.0,
-//          child: Icon(
-//            Icons.more_horiz,
-//            size: 30.0,
-//          ),
-//        ),
-//        Positioned(
-//          top: 65.0,
-//          child: Text(
-//            '注册',
-//            style: TextStyle(fontSize: 28.0),
-//          ),
-//        ),
-//      ],
-//    );
-//  }
-//}
-
 class PasswordLoginForm extends StatefulWidget {
   @override
   _PasswordLoginFormState createState() => _PasswordLoginFormState();

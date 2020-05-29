@@ -10,8 +10,6 @@ import 'package:news/models/comment.dart';
 import 'package:http/http.dart' as http;
 import 'package:news/models/user.dart';
 
-import 'liked_profile_list.dart';
-
 class CommentContent extends StatefulWidget {
   final Comment comment;
   final List<Comment> oldList;

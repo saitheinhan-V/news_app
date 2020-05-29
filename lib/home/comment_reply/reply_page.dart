@@ -344,7 +344,7 @@ class _ReplyPageState extends State<ReplyPage> {
                                             });
                                           },
                                           child: Center(
-                                            child: Text('${commentLikeCount} people like',
+                                            child: Text('$commentLikeCount people like',
                                               style: TextStyle(
                                                 //color: Colors.grey,
                                                 fontSize: 10.0,
@@ -491,54 +491,56 @@ class _ReplyPageState extends State<ReplyPage> {
             Flexible(
               child: Container(
                 padding: EdgeInsets.all(10.0),
-                child: Stack(
-                  alignment: Alignment.topRight,
-                  children: <Widget>[
-                    TextField(
-                      onTap: (){
-                        hideStickerContainer();
-                      },
-                      onChanged: (val){
-                        (val.length>0 && val.trim()!="")? //isWriting=true: isWriting=false;
-                        isWritingTo(true) : isWritingTo(false);
-                      },
-                      maxLines: null,
-                      keyboardType: TextInputType.multiline,
-                      style: TextStyle(fontSize: 15.0),
-                      controller: _textEditingController,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.all(10.0),
-                        filled: true,
-                        hintText: "Enter Reply...",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(color: Colors.black12,width: 1.0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(color: Colors.black54,width: 1.0),
-                        ),
-                      ),
-                      focusNode: focusNode,
-                      autofocus: false,
+                child: TextField(
+                  onTap: (){
+                    hideStickerContainer();
+                  },
+                  onChanged: (val){
+                    (val.length>0 && val.trim()!="")? //isWriting=true: isWriting=false;
+                    isWritingTo(true) : isWritingTo(false);
+                  },
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  style: TextStyle(fontSize: 15.0),
+                  controller: _textEditingController,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.all(10.0),
+                    filled: true,
+                    hintText: "Enter Reply...",
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black12,width: 1.0),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.tag_faces,color: isShowSticker? Colors.blue:Colors.grey,size: 20.0,),
-                      onPressed: (){
-                        if(!isShowSticker){
-                          hideKeyboard();
-                          showStickerContainer();
-                        }else{
-                          showKeyboard();
-                          hideStickerContainer();
-                        }
-                      },
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.black54,width: 1.0),
                     ),
-                  ],
+                  ),
+                  focusNode: focusNode,
+                  autofocus: false,
                 ),
               ),
+            ),
+            Material(
+              child: new Container(
+                child: new IconButton(
+                  icon: new Icon(Icons.insert_emoticon,color: isShowSticker? Colors.blue : Colors.blueGrey,),
+                  onPressed: () {
+                    setState(() {
+                      if(!isShowSticker){
+                        hideKeyboard();
+                        showStickerContainer();
+                      }else{
+                        showKeyboard();
+                        hideStickerContainer();
+                      }
+                    });
+                  },
+                ),
+              ),
+              color: Colors.white,
             ),
             isWriting? Container() : Stack(
               children: <Widget>[
@@ -594,13 +596,35 @@ class _ReplyPageState extends State<ReplyPage> {
                   // onTap: _postComment,
                   onPressed: (){
                     setState(() {
-                      //comment.add(_textEditingController.text);
                       isWritingTo(false);
-                      newReply(commentID,userID,username,_textEditingController.text);
-                      _textEditingController.clear();
-                      hideStickerContainer();
-                      hideKeyboard();
-                      //newCommentList.add('one');
+                      if(userID!=0){
+                        newReply(commentID,userID,username,_textEditingController.text);
+                        _textEditingController.clear();
+                        hideStickerContainer();
+                        hideKeyboard();
+                      }else{
+                        _textEditingController.clear();
+                        hideStickerContainer();
+                        hideKeyboard();
+                        showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext ctx){
+                              return AlertDialog(
+                                title: Text('Warning'),
+                                content: Text('You need to log in or register to be able to give comment'),
+                                actions: <Widget>[
+                                  FlatButton(
+                                    child: Text('Ok'),
+                                    onPressed: (){
+                                      Navigator.pop(ctx);
+                                    },
+                                  ),
+                                ],
+                              );
+                            }
+                        );
+                      }
                     });
                   },
                 )
@@ -1072,9 +1096,7 @@ class _ReplyContentState extends State<ReplyContent> {
       if(userList.length != 0){
         userID=userList[0].userID;
         checkLike(userID, reply.replyID).then((value){
-          setState(() {
             isLiked=value;
-          });
         });
       }
     });

@@ -173,7 +173,7 @@ class _MomentPostState extends State<MomentPost> {
             ],
           );
         }
-    ): Navigator.pop(context);
+    ): false;
   }
 
   newMomentPost(String userPostToken,String caption,String image,int like) async{

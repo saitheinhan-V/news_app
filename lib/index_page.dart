@@ -14,8 +14,10 @@ class IndexPage extends StatefulWidget {
 
 class _IndexPageState extends State<IndexPage> with SingleTickerProviderStateMixin{
 
-  int _currentIndex=0;
-  final List<Widget> _pageOption = [
+  var _pageController = PageController();
+  int _selectedIndex = 0;
+  DateTime _lastPressed;
+  final List<Widget> pages = [
     HomePage(),VideoPage(),ExplorePage(),ProfilePage(),
   ];
 
@@ -29,9 +31,33 @@ class _IndexPageState extends State<IndexPage> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      body: _pageOption[_currentIndex],
+      body: WillPopScope(
+        onWillPop: () async {
+          if (_lastPressed == null ||
+              DateTime.now().difference(_lastPressed) > Duration(seconds: 1)) {
+            //两次点击间隔超过1秒则重新计时
+            _lastPressed = DateTime.now();
+            return false;
+          }
+          return true;
+        },
+        child: PageView.builder(
+          itemBuilder: (ctx, index) => pages[index],
+          itemCount: pages.length,
+          controller: _pageController,
+          physics: NeverScrollableScrollPhysics(),
+          onPageChanged: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          _pageController.jumpToPage(index);
+        },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         iconSize: 20,
@@ -54,11 +80,6 @@ class _IndexPageState extends State<IndexPage> with SingleTickerProviderStateMix
               title: Text('Profile')
           ),
         ],
-        onTap: (index){
-          setState(() {
-            _currentIndex = index;
-          });
-        },
       ),
 
     );

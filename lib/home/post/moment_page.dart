@@ -82,12 +82,10 @@ class _MomentPageState extends State<MomentPage> {
         print("Userid=======**"+userID.toString());
         print("Mometnid====***"+moment.momentPostID.toString());
         checkLike(userID, moment.momentPostID).then((value){
-          setState(() {
             isLiked=value;
             print("Like=========="+ isLiked.toString());
             print("Userid======="+userID.toString());
             print("Mometnid===="+moment.momentPostID.toString());
-          });
         });
       }
     });
@@ -108,6 +106,11 @@ class _MomentPageState extends State<MomentPage> {
     for(int i=0;i<array.length;i++){
       imgList.add(array[i]);
     }
+    if(imgList!=null){
+      imgList.removeLast();
+    }
+    print('Imge======'+moment.image.toString());
+    print("length"+imgList.length.toString());
 
     var arr= moment.createDate.split('-');
     var arr1= arr[2].split(':');
@@ -125,6 +128,7 @@ class _MomentPageState extends State<MomentPage> {
     var res =await http.post(Api.GET_COMMENT_COUNT_URL,
     body: {
       'Postid' : id.toString(),
+      'Field' : "moment",
     });
     if(res.statusCode==200){
       var data=jsonDecode(res.body);
@@ -203,12 +207,13 @@ class _MomentPageState extends State<MomentPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: totalHeight.toDouble(),
       width: MediaQuery.of(context).size.width,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            height: profileHeight.toDouble(),
+            height: 50.0,
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.fromLTRB(10.0, 5.0, 5.0, 5.0),
             child: Row(
@@ -243,7 +248,6 @@ class _MomentPageState extends State<MomentPage> {
                   flex: 9,
                   child: Container(
                     height: 50.0,
-                    //width: MediaQuery.of(context).size.width*(90/100),
                     //padding: EdgeInsets.only(left: 8.0,right: 5.0,),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,152 +285,27 @@ class _MomentPageState extends State<MomentPage> {
                     ),
                   ),
                 ),
-//                Expanded(
-////                  flex: 4,
-////                  child: GestureDetector(
-////                    onTap: (){
-////                      setState(() {
-////                        if(first){
-////                          if(isFollowed){
-////                            isShowed=false;
-////                            isFollowed=false;
-////                            isExpanded=false;
-////                            totalHeight=totalHeight-recommendHeight;
-////                          }else{
-////                            isFollowed=true;
-////                            isExpanded=true;
-////                            isShowed=true;
-////                            totalHeight=totalHeight+recommendHeight;
-////                          }
-////                        }else{
-////                          isShowed=false;
-////                          isFollowed=false;
-////                          isExpanded=false;
-////                          first=true;
-////                          //totalHeight=totalHeight-recommendHeight;
-////                        }
-////
-////                      });
-////                    },
-////                    child: Container(
-////                      height: 20.0,
-////                      //padding: EdgeInsets.only(right: .0),
-////                      //width: MediaQuery.of(context).size.width*(10/100),
-////                      child: Row(
-////                        //mainAxisAlignment: MainAxisAlignment.spaceAround,
-////                        children: <Widget>[
-////                          Container(
-////                            height: 20.0,
-////                            padding: EdgeInsets.only(left: 5.0,right: 5.0),
-////                            decoration: BoxDecoration(
-////                              color: isFollowed? Colors.white : Colors.blue,
-////                              borderRadius: BorderRadius.circular(5.0,),
-////                              border: Border.all(
-////                                color: isFollowed? Colors.black12 : Colors.blue,
-////                                width: 1.0
-////                              ),
-////                            ),
-////                            child: Center(
-////                              child: Row(
-////                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-////                                children: <Widget>[
-////                                  Container(
-////                                    //width: 12.0,
-////                                    height: 12.0,
-////                                    decoration: BoxDecoration(
-////                                      color: isFollowed? Colors.blue : Colors.white,
-////                                      borderRadius: BorderRadius.circular(100.0),
-////                                    ),
-////                                    child: Icon(isFollowed? Icons.check: Icons.add,
-////                                      color: isFollowed? Colors.white : Colors.blue,size: 12.0,),
-////                                  ),
-////                                  SizedBox(width: 5.0,),
-////                                  Text('Follow',
-////                                    style: TextStyle(
-////                                      color: isFollowed? Colors.grey : Colors.white,
-////                                      fontSize: 12.0,
-////                                    ),
-////                                  ),
-////                                ],
-////                              ),
-////                            ),
-////                          ),
-////                          SizedBox(
-////                            width: 3.0,
-////                          ),
-////                          isFollowed? GestureDetector(
-////                            onTap: (){
-////                              setState(() {
-////                                if(isFollowed){
-////                                  if(isExpanded){
-////                                    isExpanded=false;
-////                                    isShowed=false;
-////                                    totalHeight=totalHeight-recommendHeight;
-////                                  }else{
-////                                    isExpanded=true;
-////                                    isShowed=true;
-////                                    totalHeight=totalHeight+recommendHeight;
-////                                  }
-////                                }
-////                                if(isFollowed && !isExpanded){
-////                                  first=false;
-////                                }else{
-////                                  first=true;
-////                                }
-////                              });
-////                            },
-////                              child: Container(
-////                                height: 20.0,width: 20.0,
-////                                decoration: BoxDecoration(
-////                                  color: Colors.white,
-////                                  borderRadius: BorderRadius.circular(5.0),
-////                                  border: Border.all(
-////                                    color: Colors.black12,
-////                                    width: 1.0,
-////                                  ),
-////                                ),
-////                                child: Center(
-////                                  child: Icon(isExpanded? Icons.keyboard_arrow_up:Icons.keyboard_arrow_down,
-////                                    size: 18.0,
-////                                    color: Colors.grey,),
-////                                ),
-////                              ))
-////                              :
-////                          Container(),
-////                        ],
-////                      ),
-////                    ),
-////                  ),
-////                ),
               ],
             ),
           ),
-          (isShowed)? Container(
-            height: recommendHeight.toDouble(),
-            color: Colors.black12,
-            child: Visibility(
-              visible: true,
-                child: RelevantRecommendation()),
-          ) : Container(),
           GestureDetector(
-            onTap: (){
-              //_setPage(context);
-            },
-            child: Container(
-              height: captionHeight.toDouble(),
-              padding: EdgeInsets.only(top: 5.0,left: 10.0,right: 10.0,),
-              child: Text('An example of a bee sucking honey and bring those to their home and I fell very awesome with natural and love to watch those kind of document and I would like to explore natural thing like that through my whole life',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 4,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15.0,
-                  height: 1.5,
+                onTap: (){
+                  //_setPage(context);
+                },
+                child: Container(
+                  padding: EdgeInsets.only(top: 5.0,left: 10.0,right: 10.0,bottom: 5.0),
+                  child: Text(moment.caption,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 4,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 15.0,
+                      height: 1.5,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
           GestureDetector(
             onTap: (){
               //_setPage(context);
@@ -438,10 +317,10 @@ class _MomentPageState extends State<MomentPage> {
           ),
           Container(
             color: Colors.black12,
-            height: dividerHeight.toDouble(),
+            height: 1.0,
           ),
           Container(
-            height: likeHeight.toDouble(),
+            height: 30.0,
             padding: EdgeInsets.only(left: 10.0,right: 10.0),
             child: Row(
               children: <Widget>[

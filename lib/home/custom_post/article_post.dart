@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:news/api.dart';
 import 'package:news/database/database.dart';
@@ -11,8 +13,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'package:notus/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:markdown/markdown.dart' as mk;
+
 
 class ArticlePost extends StatefulWidget {
   @override
@@ -30,11 +34,14 @@ class _ArticlePostState extends State<ArticlePost> {
   String userToken='';
   String _selectedCategory;
   String testoHtml;
+  String link;
+  String realContent='';
 
   List<User> userList=[];
   List<Token> tokenList=[];
   List<Category> categoryList=[];
   List<String> _categoryName=[];
+  List<String> linkList=[];
 
   int userId=0;
   int like=0;
@@ -54,8 +61,8 @@ class _ArticlePostState extends State<ArticlePost> {
     _loadDocument().then((document) {
       setState(() {
         _controller = ZefyrController(document);
-        testoHtml = mk.markdownToHtml(_controller.document.toString());
-        print("Html****"+testoHtml);
+        //testoHtml = mk.markdownToHtml(_controller.document.toString());
+       // print("Html****"+testoHtml);
       });
     });
 
@@ -145,7 +152,7 @@ class _ArticlePostState extends State<ArticlePost> {
             ],
           );
         }
-    ): Navigator.pop(context);
+    ): false;
   }
 
   Future<List<Token>> checkToken() async{
@@ -160,7 +167,7 @@ class _ArticlePostState extends State<ArticlePost> {
     return userLists;
   }
 
-  newArticlePost(String userPostToken,String caption,String content,int view_count,int like_count) async{
+  newArticlePost(String userPostToken,String caption,String content,String cover,int view_count,int like_count) async{
     var response=await http.post(Api.NEWARTICLEPOST_URL,
         headers: {
           'Authorization' : 'Bearer $userPostToken'
@@ -169,6 +176,7 @@ class _ArticlePostState extends State<ArticlePost> {
           "Categoryid" : categoryID.toString(),
           "Caption" : caption,
           "Content" : content,
+          "Cover" : cover,
           "Viewcount" : view_count.toString(),
           "Likecount" : like_count.toString(),
         });
@@ -199,6 +207,8 @@ class _ArticlePostState extends State<ArticlePost> {
   }
 
   uploadPost(String token) async{
+    progressDialog.show();
+
     var response= await http.post(Api.NEWPOST_URL,
         headers: {
           'Authorization' : 'Bearer $token'
@@ -207,12 +217,87 @@ class _ArticlePostState extends State<ArticlePost> {
       var data=jsonDecode(response.body);
       var userPostToken=data['data']['token'];
 
-      newArticlePost(userPostToken,textEditingController.text, _controller.document.toString(), view, like);
+      Delta _delta = _controller.document.toDelta();
+      String html = mk.markdownToHtml(notusMarkdown.encode(_delta).toString());
+
+      uploadImage(html).then((value){
+        setState(() {
+          link=value;
+          if(link != null){
+            replaceImage(html,link);
+            print("All link========="+link);
+            newArticlePost(userPostToken,textEditingController.text, realContent, link, view, like);
+          }
+        });
+      });
+
+
     }
   }
 
+  Future<String> uploadImage(String content) async{
+    String img = 'img';
+    var arr = [];
+    String allLink='';
+    arr = content.split(">");
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].contains(img)) {
+        final filePath = arr[i].split("\"")[1];
+        File file=new File(filePath);
+        FormData formData = new FormData.fromMap({
+          "file": await MultipartFile.fromFile(file.path),
+        });
+        Dio dio =new Dio();
+        Response response= await dio.post(Api.UPLOAD_URL,
+            data: formData);
+        print(response.data.toString());
+          allLink = allLink + response.data['filepath'] + "/";
+      }
+    }
+    print("All link********"+allLink);
+    return allLink;
+  }
+
+  replaceImage(String content,String totalLink) {
+    String img='img';
+    var baseUrl="http://192.168.0.119:3000/public/";
+    var arr =[];
+    int count=0;
+    arr = content.split(">");
+
+    var links=[];
+    links = totalLink.split("/");
+
+    if(links != null){
+      //replace image link
+      for(var i=0;i<arr.length;i++){
+        if (arr[i].contains(img)) {
+          var arr2 =[];
+          arr2= arr[i].split("\"");
+          if(arr2.length != 0){
+            arr2[1] = baseUrl + links[count] ;
+            String s='';
+            for(var j=0;j<arr2.length-1;j++){
+              s = s + arr2[j] + "\"";
+            }
+            s = s+ arr2[arr2.length-1];
+            arr[i] = s;
+            count= count +1;
+          }
+        }
+      }
+
+      ///re-build html tag
+      for(var n=0;n<arr.length-1;n++){
+        realContent = realContent + arr[n] + ">";
+      }
+      realContent = realContent + arr[arr.length-1];
+      print("Final content====="+realContent);
+    }
+
+  }
+
   _checkToPost(String user_token) async{
-    progressDialog.show();
     if(userId!=0){
       uploadPost(user_token);
     }else{
@@ -286,113 +371,117 @@ class _ArticlePostState extends State<ArticlePost> {
       body: WillPopScope(
           onWillPop: onBackPressed,
             child: ZefyrScaffold(
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(left: 10.0, right: 10.0),
-                      width: double.infinity,
-                      height: 50.0,
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 2,
-                            child: Row(
-                              children: <Widget>[
-                                Text('Category'),
-                                Text(
-                                  '*',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                DropdownButtonHideUnderline(
-                                  child: DropdownButton(
-                                    hint: Text(
-                                      'Choose Category',
-                                      style: TextStyle(color: Colors.grey),
-                                    ), // Not necessary for Option 1
-                                    value: _selectedCategory,
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 13.0,
-                                    ),
-                                    onChanged: (newValue) {
-                                      setState(() {
-                                        _selectedCategory = newValue;
-                                        outer: for (int i = 0; i < categoryList.length; i++) {
-                                          if (categoryList[i].categoryName == _selectedCategory) {
-                                            categoryID = categoryList[i].categoryID;
-                                            break outer;
-                                          }
-                                        }
-                                      });
-                                    },
-                                    items: _categoryName.map((name) {
-                                      return DropdownMenuItem(
-                                        child: new Text(name),
-                                        value: name,
-                                      );
-                                    }).toList(),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(left: 10.0, right: 10.0),
+                        width: double.infinity,
+                        height: 50.0,
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: <Widget>[
+                                  Text('Category'),
+                                  Text(
+                                    '*',
+                                    style: TextStyle(color: Colors.red),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
+                            Expanded(
+                              flex: 7,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  DropdownButtonHideUnderline(
+                                    child: DropdownButton(
+                                      hint: Text(
+                                        'Choose Category',
+                                        style: TextStyle(color: Colors.grey),
+                                      ), // Not necessary for Option 1
+                                      value: _selectedCategory,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13.0,
+                                      ),
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          _selectedCategory = newValue;
+                                          outer: for (int i = 0; i < categoryList.length; i++) {
+                                            if (categoryList[i].categoryName == _selectedCategory) {
+                                              categoryID = categoryList[i].categoryID;
+                                              break outer;
+                                            }
+                                          }
+                                        });
+                                      },
+                                      items: _categoryName.map((name) {
+                                        return DropdownMenuItem(
+                                          child: new Text(name),
+                                          value: name,
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(padding: EdgeInsets.only(left: 10.0,right: 10.0),
+                        child: Container(
+                          height: 1.0,color: Colors.grey,
+                        ),
+                      ),
+                      Container(
+                          padding: EdgeInsets.only(left: 10.0,right: 10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                        ],
-                      ),
-                    ),
-                    Container(padding: EdgeInsets.only(left: 10.0,right: 10.0),
-                      child: Container(
-                        height: 1.0,color: Colors.grey,
-                      ),
-                    ),
-                    Container(
-                        padding: EdgeInsets.only(left: 10.0,right: 10.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: TextField(
-                          autofocus: true,
-                          controller: textEditingController,
-                          focusNode: focusNode,
-                          maxLines: null,
-                          maxLength: 50,
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            hintText: 'Enter Caption... (min 5 ~ max 30)',
-                            focusedBorder: InputBorder.none,
-                            border: InputBorder.none,
+                          child: TextField(
+                            autofocus: true,
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            maxLines: null,
+                            maxLength: 200,
+                            keyboardType: TextInputType.multiline,
+                            decoration: InputDecoration(
+                              hintText: 'Enter Caption... (min 20 ~ max 150)',
+                              focusedBorder: InputBorder.none,
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (value){
+                              (value.trim()!=null && value.length>=20)? isWritingTo(true) : isWritingTo(false);
+                            },
                           ),
-                          onChanged: (value){
-                            (value.trim()!=null && value.length>=5)? isWritingTo(true) : isWritingTo(false);
-                          },
+                        ),
+                      Container(padding: EdgeInsets.only(left: 10.0,right: 10.0),
+                        child: Container(
+                          height: 1.0,color: Colors.grey,
                         ),
                       ),
-                    Container(padding: EdgeInsets.only(left: 10.0,right: 10.0),
-                      child: Container(
-                        height: 1.0,color: Colors.grey,
-                      ),
-                    ),
-                    Flexible(
-                      child: Container(
-                        //height: MediaQuery.of(context).size.height*(50/100),
-                        child: new ZefyrEditor(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          autofocus: false,
-                          imageDelegate: MyAppZefyrImageDelegate(),
+                      Flexible(
+                        child: Container(
+                          //height: MediaQuery.of(context).size.height*(50/100),
+                          child: new ZefyrEditor(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            autofocus: false,
+                            imageDelegate: MyAppZefyrImageDelegate(),
+                            physics: ClampingScrollPhysics(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -412,7 +501,7 @@ class _ArticlePostState extends State<ArticlePost> {
     final contents = await file.readAsString();
     return NotusDocument.fromJson(jsonDecode(contents));
     }
-    final Delta delta = Delta()..insert("Content... AAA ...\n &&&& .... \n pppp\n");
+    final Delta delta = Delta()..insert("Content...\n");
     return NotusDocument.fromDelta(delta);
   }
 
@@ -434,7 +523,7 @@ class MyAppZefyrImageDelegate implements ZefyrImageDelegate<ImageSource> {
     final file = await ImagePicker.pickImage(source: source);
     if (file == null) return null;
     // We simply return the absolute path to selected file.
-    return file.uri.toString();
+    return file.path;
   }
 
   @override

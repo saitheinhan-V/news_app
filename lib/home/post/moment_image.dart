@@ -142,15 +142,26 @@ class _MomentImageState extends State<MomentImage> {
                     flex: 1,
                     child: Container(
                       height: 150.0,
-                      child: Container(
-                        margin: EdgeInsets.all(2.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Container(
+                          margin: EdgeInsets.all(2.0),
 //                        child: CachedNetworkImage(
 //                          imageUrl: baseUrl+imgList[0],
 //                          //placeholder: (context, url) => CircularProgressIndicator(),
 //                          errorWidget: (context, url, error) => Icon(Icons.error),
 //                          fit: BoxFit.cover,
 //                        ),
-                        child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
+                          //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(baseUrl+imgList[0]),
+                                fit: BoxFit.cover,
+                              ),
+                            borderRadius: BorderRadius.circular(5.0),
+
+                          ),
+                        ),
                       ),
                     )
                 ),
@@ -158,16 +169,26 @@ class _MomentImageState extends State<MomentImage> {
                     flex: 1,
                     child: Container(
                       height: 150.0,
-                      child: Container(
-                        margin: EdgeInsets.all(2.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Container(
+                          margin: EdgeInsets.all(2.0),
 //                        child: CachedNetworkImage(
 //                          imageUrl: baseUrl+imgList[1],
 //                          //placeholder: (context, url) => CircularProgressIndicator(),
 //                          errorWidget: (context, url, error) => Icon(Icons.error),
 //                          fit: BoxFit.cover,
 //                        ),
-                        child: Image.network(baseUrl+imgList[1],fit: BoxFit.cover,),
+                          //child: Image.network(baseUrl+imgList[1],fit: BoxFit.cover,),
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(baseUrl+imgList[1]),
+                                fit: BoxFit.cover,
+                              ),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
 
+                        ),
                       ),
                     )
                 ),
@@ -176,15 +197,25 @@ class _MomentImageState extends State<MomentImage> {
           ) : Container(),
           five? Container(
             height: 200.0,
-            child: Container(
-              margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5.0),
+              child: Container(
+                margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
 //              child: CachedNetworkImage(
 //                imageUrl: baseUrl+imgList[0],
 //                //placeholder: (context, url) => CircularProgressIndicator(),
 //                errorWidget: (context, url, error) => Icon(Icons.error),
 //                fit: BoxFit.cover,
 //              ),
-            child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
+              //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(baseUrl+imgList[0]),
+                      fit: BoxFit.cover,
+                    ),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+              ),
             ),
           ): Container(),
         ],
@@ -195,21 +226,25 @@ class _MomentImageState extends State<MomentImage> {
   Container imageContent(String image){
     return Container(
       height: 100.0,
-      child: Container(
-        margin: EdgeInsets.all(2.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5.0),
+        child: Container(
+          margin: EdgeInsets.all(2.0),
 //        child: CachedNetworkImage(
 //          imageUrl: baseUrl+image,
 //         // placeholder: (context, url) => CircularProgressIndicator(),
 //          errorWidget: (context, url, error) => Icon(Icons.error),
 //          fit: BoxFit.cover,
 //        ),
-        child: Image.network(baseUrl+image,fit: BoxFit.cover,),
-//      decoration: BoxDecoration(
-//        image: DecorationImage(
-//          image: NetworkImage(baseUrl+image),
-//          fit: BoxFit.cover,
-//        )
-//      ),
+          //child: Image.network(baseUrl+image,fit: BoxFit.cover,),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(baseUrl+image),
+            fit: BoxFit.cover,
+          ),
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        ),
       ),
     );
   }

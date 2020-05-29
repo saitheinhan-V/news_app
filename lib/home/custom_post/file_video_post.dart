@@ -216,7 +216,7 @@ class _FileVideoPostState extends State<FileVideoPost> {
             ],
           );
         })
-        : Navigator.pop(context);
+        : false;
   }
 
   @override
