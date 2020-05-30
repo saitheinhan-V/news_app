@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:news/ant_icon.dart';
 import 'package:news/api.dart';
 import 'package:news/database/database.dart';
 import 'package:news/home/page_details/moment_page_details.dart';
@@ -321,7 +322,7 @@ class _MomentPageState extends State<MomentPage> {
           ),
           Container(
             height: 30.0,
-            padding: EdgeInsets.only(left: 10.0,right: 10.0),
+            padding: EdgeInsets.only(left: 10.0,right: 10.0,bottom: 3),
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -330,7 +331,7 @@ class _MomentPageState extends State<MomentPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         GestureDetector(
-                            child: Icon(Icons.thumb_up,size: 15.0,color: isLiked? Colors.blue : Colors.grey,),
+                            child: Icon(Icons.thumb_up,size: 18.0,color: isLiked? Colors.blue : Colors.grey,),
                         onTap: (){
                               setState(() {
                                 if(isLiked){
@@ -350,7 +351,7 @@ class _MomentPageState extends State<MomentPage> {
                         Text(like.toString(),
                             style: TextStyle(
                                 color: Colors.grey,
-                                fontSize: 12.0
+                                fontSize: 13.0
                             ),
                           ),
                       ],
@@ -369,12 +370,12 @@ class _MomentPageState extends State<MomentPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Icon(Icons.comment,size: 15.0,color: Colors.grey,),
+                        Icon(AntIcons.comment,size: 18.0,color: Colors.grey,),
                         SizedBox(width: 5.0,),
                         Text(comment.toString(),
                           style: TextStyle(
                               color: Colors.grey,
-                              fontSize: 12.0
+                              fontSize: 13.0
                           ),
                         ),
                       ],
@@ -386,12 +387,12 @@ class _MomentPageState extends State<MomentPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Icon(Icons.share,size: 15.0,color: Colors.grey,),
+                      Icon(AntIcons.share,size: 18.0,color: Colors.grey,),
                       SizedBox(width: 5.0,),
-                      Text('1000',
+                      Text('0',
                           style: TextStyle(
                               color: Colors.grey,
-                              fontSize: 12.0
+                              fontSize: 13.0
                           ),
                         ),
 

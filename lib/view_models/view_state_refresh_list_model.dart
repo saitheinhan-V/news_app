@@ -70,7 +70,7 @@ abstract class ViewStateRefreshListModel<T> extends ViewStateListModel<T> {
       } else {
         onCompleted(data);
         list.addAll(data);
-        if (data.length < pageSize) {
+        if (data.length < 4) {
           refreshController.loadNoData();
         } else {
           refreshController.loadComplete();

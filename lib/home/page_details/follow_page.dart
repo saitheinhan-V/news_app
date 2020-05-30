@@ -22,9 +22,7 @@ import 'package:news/view_models/view_state_widget.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class FollowPageContent extends StatefulWidget {
-  final int userID;
 
-  FollowPageContent({Key key, this.userID}) : super(key: key);
 
   @override
   _FollowPageContentState createState() => _FollowPageContentState();
@@ -319,7 +317,7 @@ class _FollowPageContentState extends State<FollowPageContent>
   Widget build(BuildContext context) {
     super.build(context);
     return ProviderWidget<MomentListModel>(
-      model: MomentListModel(widget.userID),
+      model: MomentListModel(),
       onModelReady: (model) => model.initData(),
       builder: (context, model, child) {
         if (model.isBusy) {
@@ -337,7 +335,7 @@ class _FollowPageContentState extends State<FollowPageContent>
           header: WaterDropHeader(),
           footer: RefresherFooter(),
           onRefresh: model.refresh,
-          //onLoading: model.loadMore,
+          onLoading: model.loadMore,
           enablePullUp: true,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,

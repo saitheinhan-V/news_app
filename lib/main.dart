@@ -149,23 +149,7 @@ class _IntroScreenState extends State<IntroScreen> {
       ),
     );
 
-    //getCategory();
-  }
 
-  getCategory() async{
-    List<Category> categoryList= await SQLiteDbProvider.db.getCategory();
-    if(categoryList.length == 0 ){
-      var res = await http.get("http://192.168.0.110:3000//api/category");
-      if(res.statusCode ==200){
-        var body= jsonDecode(res.body);
-        var data=body['data']['category'];
-        print("--------" + data.length.toString());
-        for(int i=0;i<data.length;i++){
-          Category category=new Category(data[i]['Categoryid'], data[i]['Categoryname'], data[i]['Categoryorder']);
-          SQLiteDbProvider.db.insertCategory(category);
-        }
-      }
-    }
   }
 
   void onDonePress() {

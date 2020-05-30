@@ -31,7 +31,7 @@ class RefresherFooter extends StatelessWidget {
 //      failedText: S.of(context).loadMoreFailed,
 //      idleText: S.of(context).loadMoreIdle,
 //      loadingText: S.of(context).loadMoreLoading,
-      noDataText: 'No more data',
+      noDataText: 'No more post available...',
     );
   }
 }

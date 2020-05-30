@@ -29,6 +29,7 @@ import 'package:news/view_models/project_model.dart';
 import 'package:news/view_models/view_state_widget.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:news/ant_icon.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -57,10 +58,14 @@ class _HomePageState extends State<HomePage>
   int userID = 0;
 
   static List<Action> _action = <Action>[
-    Action(title: 'Upload', icon: Icons.file_upload, widget: FileVideoPost()),
-    Action(title: 'Moment', icon: Icons.contact_mail, widget: MomentPost()),
-    Action(title: 'Article', icon: Icons.library_books, widget: ArticlePost()),
-    Action(title: 'Video', icon: Icons.video_call, widget: NonePageDetails()),
+    Action(title: 'Upload', icon: AntIcons.video, widget: FileVideoPost()),
+    Action(title: 'Moment', icon: AntIcons.moment, widget: MomentPost()),
+    Action(title: 'Article', icon: AntIcons.article, widget: ArticlePost()),
+    Action(title: 'Video', icon: AntIcons.live_video, widget: NonePageDetails()),
+//    Action(title: '发布视频',icon: AntIcons.video,widget: FileVideoPost()),
+//    Action(title: '发头条',icon: AntIcons.moment,widget: MomentPost()),
+//    Action(title: '写文章',icon: AntIcons.article,widget: ArticlePost()),
+//    Action(title: '开直播',icon: AntIcons.live_video,widget: NonePageDetails()),
   ];
 
   Action selectedAction = _action[0];
@@ -71,43 +76,19 @@ class _HomePageState extends State<HomePage>
     // TODO: implement initState
     super.initState();
     valueNotifier = ValueNotifier(0);
-    //addCategory();
-//    categoryList.add(Category(1, 'Follow', 1));
-//    categoryList.add(Category(4, 'Funny', 1));
-//    categoryList.add(Category(5, 'Health', 1));
-//    categoryList.add(Category(2, 'International', 1));
-//    categoryList.add(Category(3, 'Hot', 1));
-//
-//    _tabs = getTabs(categoryList);
-    //_tabController = TabController(length: categoryList.length, vsync: this);
-//    getCategory().then((value){
-//      setState(() {
-//        categoryList.clear();
-//        categoryList=value;
-//        print("List length==========="+categoryList.length.toString());
-//        _tabs = getTabs(categoryList);
-//        //_tabController = TabController(length: categoryList.length, vsync: this);
+//      checkUser().then((value) {
+//        setState(() {
+//          userList = value;
+//          if (userList.length == 0) {
+//            userID = 0;
+//          } else {
+//            User user = userList[0];
+//            userID = user.userID;
+//            print("Result========*******" + userID.toString());
+//          }
+//        });
 //      });
-//    });
 
-    setState(() {
-      checkUser().then((value) {
-        userList = value;
-        if (userList.length == 0) {
-          userID = 0;
-        } else {
-          User user = userList[0];
-          userID = user.userID;
-          print("Result========" + userID.toString());
-        }
-      });
-    });
-
-    getCategory().then((value) {
-      setState(() {
-        //categoryList=value;
-      });
-    });
   }
 
   Future<List<User>> checkUser() async {
@@ -151,22 +132,6 @@ class _HomePageState extends State<HomePage>
     return _tabs;
   }
 
-  List<Widget> getWidgets(int count) {
-    _generalWidgets.clear();
-    for (int i = 0; i < count; i++) {
-      if (categoryList[i].categoryName == 'Follow') {
-        _generalWidgets.add(FollowPageContent(
-          userID: userID,
-        ));
-      } else {
-        _generalWidgets.add(ArticlePage(
-          id: categoryList[i].categoryID,
-        ));
-      }
-    }
-    return _generalWidgets;
-  }
-
   void _onSelected(Action action) {
     setState(() {
       selectedAction = action;
@@ -174,6 +139,23 @@ class _HomePageState extends State<HomePage>
           MaterialPageRoute(builder: (context) => selectedAction.widget));
     });
   }
+
+//  List<Widget> getWidgets(int count) {
+//    _generalWidgets.clear();
+//    for (int i = 0; i < count; i++) {
+//      if (categoryList[i].categoryName == 'Follow') {
+//        _generalWidgets.add(FollowPageContent(
+//          userID: userID,
+//        ));
+//      } else {
+//        _generalWidgets.add(ArticlePage(
+//          id: categoryList[i].categoryID,
+//        ));
+//      }
+//    }
+//    return _generalWidgets;
+//  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -336,6 +318,46 @@ class _HomePageState extends State<HomePage>
                             ),
                           ),
                         ),
+                        actions: <Widget>[
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              cardColor: Colors.black,
+                            ),
+                            child:  PopupMenuButton(
+                              itemBuilder: (BuildContext context){
+                                return _action.map((Action action){
+                                  return PopupMenuItem(
+                                    value: action,
+                                    child: Container(
+                                      width: 75.0,
+                                      color: Colors.black,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(action.icon,color: Colors.white,size: 20.0,),
+                                          SizedBox(
+                                            width: 3.0,
+                                          ),
+                                          Text(action.title,style: TextStyle(fontSize: 13.0,color: Colors.white),),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                              icon: Container(
+                                child: Column(
+                                  children: <Widget>[
+                                    Icon(AntIcons.add,color: Colors.white,size: 23,),
+                                    SizedBox(height: 1.5,),
+                                    Text('发布',style: TextStyle(fontSize: 11),)
+                                  ],
+                                ),
+                              ),
+                              offset: Offset(0,100),
+                              onSelected: _onSelected,
+                            ),
+                          ),
+                        ],
                         bottom: TabBar(
                             isScrollable: true,
                             tabs: List.generate(
@@ -347,7 +369,7 @@ class _HomePageState extends State<HomePage>
                       body: TabBarView(
                         children: List.generate(
                             categoryList.length,
-                            (index) => categoryList[index].categoryName=='Follow' ? FollowPageContent(userID: userID,) : ArticlePage(id: categoryList[index].categoryID,),
+                            (index) => categoryList[index].categoryName=='Follow' ? FollowPageContent() : ArticlePage(id: categoryList[index].categoryID,),
                         ),
                       ),
                     );

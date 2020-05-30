@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:news/explore/pages/hot_people.dart';
 import 'package:news/explore/pages/hot_videos.dart';
 import 'package:news/explore/pages/hot_news.dart';
@@ -13,6 +12,7 @@ class ExplorePage extends StatefulWidget {
 class _ExplorePageState extends State<ExplorePage>
     with SingleTickerProviderStateMixin {
   TabController tabController;
+
   void initState() {
     super.initState();
     tabController = TabController(vsync: this, length: 3);
@@ -21,29 +21,28 @@ class _ExplorePageState extends State<ExplorePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        //title: new Text('Explore'),
-//        actions: <Widget>[
-//          IconButton(
-//              icon: Icon(Icons.search),
-//              iconSize: 30.0,
-//              onPressed: () {
-//                showSearch(context: context, delegate: SearchBarDelegate());
-//              }),
-//        ],
-        bottom: TabBar(
-          tabs: <Widget>[
-            Text("Top People",style: TextStyle(fontSize: 15.0),),
-            Text("Hot News",style: TextStyle(fontSize: 15.0),),
-            Text("Hot Videos",style: TextStyle(fontSize: 15.0),),
-          ],
-          //labelStyle: TextStyle(fontSize: 15.0,),
-          labelPadding: EdgeInsets.only(bottom: 10.0),
-          controller: tabController,
-          labelColor: Colors.white,
-          //indicatorSize: TabBarIndicatorSize.label,
-          // unselectedLabelColor: Colors.black,
-          indicatorColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          color: Theme.of(context).primaryColor,
+          child: SafeArea(
+            child: Column(
+              children: <Widget>[
+                Expanded(child: Container()),
+                TabBar(
+                  tabs: <Widget>[
+                    Text("Top People",style: TextStyle(fontSize: 15.0),),
+                    Text("Hot News",style: TextStyle(fontSize: 15.0),),
+                    Text("Hot Videos",style: TextStyle(fontSize: 15.0),),
+                  ],
+                  labelPadding: EdgeInsets.only(bottom: 10.0),
+                  controller: tabController,
+                  labelColor: Colors.white,
+                  indicatorColor: Colors.white,
+                ),
+              ],
+            )
+          ),
         ),
       ),
       body: TabBarView(

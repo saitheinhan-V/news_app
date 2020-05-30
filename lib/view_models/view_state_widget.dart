@@ -101,21 +101,21 @@ class ViewStateErrorWidget extends StatelessWidget {
     var defaultImage;
     var defaultTitle;
     var errorMessage = error.message;
-    String defaultTextData = S.of(context).viewStateButtonRetry;
+    String defaultTextData = 'Retry';
     switch (error.errorType) {
       case ViewStateErrorType.networkTimeOutError:
         defaultImage = Transform.translate(
           offset: Offset(-50, 0),
-          child: const Icon(IconFonts.pageNetworkError,
+          child: const Icon(Icons.network_check,
               size: 100, color: Colors.grey),
         );
-        defaultTitle = S.of(context).viewStateMessageNetworkError;
+        defaultTitle = 'Load Failed, Check Network...';
         // errorMessage = ''; // 网络异常移除message提示
         break;
       case ViewStateErrorType.defaultError:
         defaultImage =
-            const Icon(IconFonts.pageError, size: 100, color: Colors.grey);
-        defaultTitle = S.of(context).viewStateMessageError;
+            const Icon(Icons.error_outline, size: 50, color: Colors.grey);
+        defaultTitle ='Load Failed';
         break;
 
       case ViewStateErrorType.unauthorizedError:
@@ -160,9 +160,20 @@ class ViewStateEmptyWidget extends StatelessWidget {
       onPressed: this.onPressed,
 //      image: image ??
 //          const Icon(IconFonts.pageEmpty, size: 100, color: Colors.grey),
-      image: const Icon(Icons.hourglass_empty,size: 50.0,color: Colors.grey,),
+      //image: const Icon(Icons.hourglass_empty,size: 50.0,color: Colors.grey,),
+      image: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/loading_ox.gif"), fit: BoxFit.cover),
+            borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: Colors.black12)
+        ),
+
+      ),
       //title: message ?? S.of(context).viewStateMessageEmpty,
-      title: 'Empty data....',
+      title: 'Empty data.....',
       buttonText: buttonText,
       //buttonTextData: S.of(context).viewStateButtonRefresh,
       buttonTextData: 'Refresh',

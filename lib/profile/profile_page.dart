@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:news/ant_icon.dart';
 import 'package:news/api.dart';
 import 'package:news/models/following.dart';
 import 'package:news/models/user.dart';
@@ -12,22 +13,20 @@ import 'package:dio/dio.dart';
 import 'package:news/models/follow.dart';
 
 class ProfilePage extends StatefulWidget {
-
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   String userName;
-  int userID=0;
-  int follower=0;
-  int following=0;
-  int post=0;
-  int video=0;
-  bool logIn=false;
-  List<User> userList=new List<User>();
-  List<Follow> followerList=new List<Follow>();
+  int userID = 0;
+  int follower = 0;
+  int following = 0;
+  int post = 0;
+  int video = 0;
+  bool logIn = false;
+  List<User> userList = new List<User>();
+  List<Follow> followerList = new List<Follow>();
   List<Following> followingList = new List<Following>();
 
   @override
@@ -35,68 +34,67 @@ class _ProfilePageState extends State<ProfilePage> {
     // TODO: implement initState
     super.initState();
     setState(() {
-      checkUser().then((value){
+      checkUser().then((value) {
         setState(() {
-          userList=value;
-          print('User count===='+userList.length.toString());
-          if(userList.length==0){
-            userName='first';
-            print("Result====="+userName);
-          }else{
-            User user=userList[0];
-            userName=user.userName;
-            userID=user.userID;
-            print("Result======== "+userName + userID.toString());
-            if(userID!=0){
-                getFollowerList().then((value){
-                  setState(() {
-                    followerList=value;
-                    follower=followerList.length;
-                  });
+          userList = value;
+          print('User count====' + userList.length.toString());
+          if (userList.length == 0) {
+            userName = 'first';
+            print("Result=====" + userName);
+          } else {
+            User user = userList[0];
+            userName = user.userName;
+            userID = user.userID;
+            print("Result======== " + userName + userID.toString());
+            if (userID != 0) {
+              getFollowerList().then((value) {
+                setState(() {
+                  followerList = value;
+                  follower = followerList.length;
                 });
-                checkFollowing(userID).then((value){
-                  setState(() {
-                    followingList=value;
-                    following=followingList.length;
-                  });
+              });
+              checkFollowing(userID).then((value) {
+                setState(() {
+                  followingList = value;
+                  following = followingList.length;
                 });
-                getTotalPost(userID).then((value){
-                  setState(() {
-                    post= value;
-                  });
+              });
+              getTotalPost(userID).then((value) {
+                setState(() {
+                  post = value;
                 });
-            }else{
-              follower=0;
+              });
+            } else {
+              follower = 0;
             }
           }
-          print("Result====="+userName);
+          print("Result=====" + userName);
         });
       });
     });
   }
 
-  Future<int> getTotalPost(int id) async{
-    int count=0;
-    var response= await http.post(Api.USERPOST_COUNT_URL,
-    body: {
-      'Userid' : id.toString(),
+  Future<int> getTotalPost(int id) async {
+    int count = 0;
+    var response = await http.post(Api.USERPOST_COUNT_URL, body: {
+      'Userid': id.toString(),
     });
-    if(response.statusCode ==200){
-      var data=jsonDecode(response.body);
-      count= data['count'];
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      count = data['count'];
     }
     return count;
   }
 
-  Future<List<Follow>> getFollowerList() async{
+  Future<List<Follow>> getFollowerList() async {
     Future<List<Follow>> follows = SQLiteDbProvider.db.getFollower();
-    List<Follow> followLists= await follows;
+    List<Follow> followLists = await follows;
     return followLists;
   }
 
-  Future<List<User>> checkUser() async{
-    Future<List<User>> futureList=SQLiteDbProvider.db.getUser();
-    List<User> userLists= await futureList;
+  Future<List<User>> checkUser() async {
+    Future<List<User>> futureList = SQLiteDbProvider.db.getUser();
+    List<User> userLists = await futureList;
     return userLists;
   }
 
@@ -120,56 +118,57 @@ class _ProfilePageState extends State<ProfilePage> {
 //    return followers;
 //  }
 
-  insertFollower(int id) async{
-    var response=await http.post(Api.GETFOLLOWER_URL,
-        body: {
-          "Userid" : id.toString(),
-        }
-    );
-    if(response.statusCode ==200){
-      var body=jsonDecode(response.body);
-      var data=body['data']['follower'];
-      print('Data Length===='+data.length.toString());
+  insertFollower(int id) async {
+    var response = await http.post(Api.GETFOLLOWER_URL, body: {
+      "Userid": id.toString(),
+    });
+    if (response.statusCode == 200) {
+      var body = jsonDecode(response.body);
+      var data = body['data']['follower'];
+      print('Data Length====' + data.length.toString());
       SQLiteDbProvider.db.deleteFollower();
-      for(int j=0;j<data.length;j++){
+      for (int j = 0; j < data.length; j++) {
         //User user=User(j,'null','000','000');
-        Follow follow=new Follow(data[j]['Followid'],data[j]['Userid'],data[j]['Followerid'],data[j]['Followdate']);
+        Follow follow = new Follow(data[j]['Followid'], data[j]['Userid'],
+            data[j]['Followerid'], data[j]['Followdate']);
         SQLiteDbProvider.db.insertFollower(follow);
       }
     }
   }
 
-  _movedToLoginPage(BuildContext context, LoginPage loginPage) async{
-    User user=await Navigator.push(context, MaterialPageRoute(builder: (context)=> loginPage)) as User;
-    userName=user.userName;
-    userID=user.userID;
+  _movedToLoginPage(BuildContext context, LoginPage loginPage) async {
+    User user = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => loginPage)) as User;
+    userName = user.userName;
+    userID = user.userID;
     insertFollower(userID);
-    getFollowerList().then((value){
+    getFollowerList().then((value) {
       setState(() {
-        followerList=value;
-        follower=followerList.length;
+        followerList = value;
+        follower = followerList.length;
       });
     });
 
-    checkFollowing(userID).then((value){
+    checkFollowing(userID).then((value) {
       setState(() {
-        followingList=value;
-        following=followingList.length;
+        followingList = value;
+        following = followingList.length;
       });
     });
   }
 
-  Future<List<Follow>> getFollower(int userId) async{
-    List<Follow> follows= List<Follow>();
-    var response=await http.post(Api.GETFOLLOWING_URL,body: {
-      "Followerid" : userId.toString(),
+  Future<List<Follow>> getFollower(int userId) async {
+    List<Follow> follows = List<Follow>();
+    var response = await http.post(Api.GETFOLLOWING_URL, body: {
+      "Followerid": userId.toString(),
     });
-    if(response.statusCode ==200){
-      var body=jsonDecode(response.body);
-      var data=body['data']['following'];
-      print('Data Length====*****'+data.length.toString());
-      for(var n=0;n<data.length;n++){
-        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
+    if (response.statusCode == 200) {
+      var body = jsonDecode(response.body);
+      var data = body['data']['following'];
+      print('Data Length====*****' + data.length.toString());
+      for (var n = 0; n < data.length; n++) {
+        Follow follow = new Follow(data[n]['Followid'], data[n]['Userid'],
+            data[n]['Followerid'], data[n]['Followdate']);
         follows.add(follow);
       }
     }
@@ -177,37 +176,49 @@ class _ProfilePageState extends State<ProfilePage> {
     return follows;
   }
 
-  Future<List<Following>> checkFollowing(int id) async{
-    List<Following> followings= await SQLiteDbProvider.db.getFollowing();//check currently following user from sqflite database
-    if(followings.length == 0){
-      List<Follow> followList= await getFollower(id);//get following list from server
+  Future<List<Following>> checkFollowing(int id) async {
+    List<Following> followings = await SQLiteDbProvider.db
+        .getFollowing(); //check currently following user from sqflite database
+    if (followings.length == 0) {
+      List<Follow> followList =
+          await getFollower(id); //get following list from server
       SQLiteDbProvider.db.deleteFollowing();
-      List<Following> followingLists=new List<Following>();
-      for(var i=0;i<followList.length;i++){
-        Follow follow=followList[i];
-        var res= await http.post(Api.USER_INFO_URL,body: {
-          "Userid" : follow.userID.toString(),
+      List<Following> followingLists = new List<Following>();
+      for (var i = 0; i < followList.length; i++) {
+        Follow follow = followList[i];
+        var res = await http.post(Api.USER_INFO_URL, body: {
+          "Userid": follow.userID.toString(),
         });
         print(res.body.toString());
-        if(res.statusCode ==200){
-          var body=jsonDecode(res.body);
-          var dataUser=body['data'];
-          Following following=new Following(dataUser['Userid'],dataUser['Username'],dataUser['Phone'],dataUser['Password'],
-              dataUser['Createdate'],dataUser['Profilepic'],dataUser['Imei'],dataUser['Qq'],dataUser['Sex'],dataUser['Email'],
-              dataUser['Address'],dataUser['Birthday'],dataUser['Introduction']);
+        if (res.statusCode == 200) {
+          var body = jsonDecode(res.body);
+          var dataUser = body['data'];
+          Following following = new Following(
+              dataUser['Userid'],
+              dataUser['Username'],
+              dataUser['Phone'],
+              dataUser['Password'],
+              dataUser['Createdate'],
+              dataUser['Profilepic'],
+              dataUser['Imei'],
+              dataUser['Qq'],
+              dataUser['Sex'],
+              dataUser['Email'],
+              dataUser['Address'],
+              dataUser['Birthday'],
+              dataUser['Introduction']);
           SQLiteDbProvider.db.insertFollowing(following);
 
           followingLists.add(following);
-          res=null;
-          body=null;
-          dataUser=null;
+          res = null;
+          body = null;
+          dataUser = null;
         }
       }
       return followingLists;
-    }else{
+    } else {
       return followings;
     }
-
   }
 
   @override
@@ -218,193 +229,200 @@ class _ProfilePageState extends State<ProfilePage> {
           physics: AlwaysScrollableScrollPhysics(),
           children: <Widget>[
             // Circular Login Button
-            userName=='first'? Container(
-              height: 200,
-              color: Colors.white,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ClipOval(
-                    child: Material(
-                      color: Colors.blueAccent,
-                      child: InkWell(
-                        splashColor: Colors.blue,
-                        child: SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                  colors: [
-                                    const Color(0xFF3366FF),
-                                    const Color(0xFF00CCFF),
-                                  ],
-                                  begin: const FractionalOffset(0.0, 0.0),
-                                  end: const FractionalOffset(1.0, 0.0),
-                                  stops: [0.0, 1.0],
-                                  tileMode: TileMode.clamp),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '登陆',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 24,
+            userName == 'first'
+                ? Container(
+                    height: 200,
+                    color: Colors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        ClipOval(
+                          child: Material(
+                            color: Colors.blueAccent,
+                            child: InkWell(
+                              splashColor: Colors.blue,
+                              child: SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF3366FF),
+                                          const Color(0xFF00CCFF),
+                                        ],
+                                        begin: const FractionalOffset(0.0, 0.0),
+                                        end: const FractionalOffset(1.0, 0.0),
+                                        stops: [0.0, 1.0],
+                                        tileMode: TileMode.clamp),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '登陆',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 24,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
                               ),
+                              onTap: () {
+                                setState(() {
+                                  _movedToLoginPage(context, LoginPage());
+                                });
+                                //Navigator.pushNamed(context, "/login");
+                              },
                             ),
                           ),
                         ),
-                        onTap: () {
-                          setState(() {
-                            _movedToLoginPage(context,LoginPage());
-                          });
-                          //Navigator.pushNamed(context, "/login");
-                        },
+                      ],
+                    ),
+                  )
+                : Container(
+                    height: 100.0,
+                    child: Container(
+                      padding: EdgeInsets.only(
+                          top: 10.0, right: 10.0, left: 20.0, bottom: 10.0),
+                      child: Row(
+                        children: <Widget>[
+                          // 头像
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: AssetImage('assets/minion.jpg'),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 15.0,
+                          ),
+                          // 作者信息
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.only(
+                                  top: 10.0,
+                                  right: 10.0,
+                                  left: 10.0,
+                                  bottom: 10.0),
+                              child: Column(
+                                children: <Widget>[
+                                  // 人气
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        userName.toString(),
+                                        style: TextStyle(
+                                            fontSize: 20.0,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.only(right: 10.0),
+                                        child: Column(
+                                          children: <Widget>[
+                                            Text(
+                                              post.toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'Post',
+                                              style: TextStyle(
+                                                color: Color.fromRGBO(
+                                                    128, 128, 128, 1.0),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(
+                                            left: 5.0, right: 10.0),
+                                        child: Column(
+                                          children: <Widget>[
+                                            Text(
+                                              video.toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'Video',
+                                              style: TextStyle(
+                                                color: Color.fromRGBO(
+                                                    128, 128, 128, 1.0),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(
+                                            left: 5.0, right: 10.0),
+                                        child: Column(
+                                          children: <Widget>[
+                                            Text(
+                                              follower.toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'Follower',
+                                              style: TextStyle(
+                                                color: Color.fromRGBO(
+                                                    128, 128, 128, 1.0),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(
+                                            left: 5.0, right: 10.0),
+                                        child: Column(
+                                          children: <Widget>[
+                                            Text(
+                                              following.toString(),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'Following',
+                                              style: TextStyle(
+                                                color: Color.fromRGBO(
+                                                    128, 128, 128, 1.0),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  // 订阅
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            )
-                : Container(
-              height: 100.0,
-              child: Container(
-                padding: EdgeInsets.only(
-                    top: 10.0,
-                    right: 10.0,
-                    left: 20.0,
-                    bottom: 10.0
-                ),
-                child: Row(
-                  children: <Widget>[
-                    // 头像
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: AssetImage('assets/minion.jpg'),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 15.0,
-                    ),
-                    // 作者信息
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.only(
-                            top: 10.0,
-                            right: 10.0,
-                            left: 10.0,
-                            bottom: 10.0
-                        ),
-                        child: Column(
-                          children: <Widget>[
-                            // 人气
-                            Row(
-                              children: <Widget>[
-                                Text(userName.toString(),
-                                  style: TextStyle(
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.bold
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 5.0,
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(right: 10.0),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        post.toString(),
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        'Post',
-                                        style: TextStyle(
-                                          color: Color.fromRGBO(128, 128, 128, 1.0),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0,right: 10.0),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        video.toString(),
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        'Video',
-                                        style: TextStyle(
-                                          color: Color.fromRGBO(128, 128, 128, 1.0),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0,right: 10.0),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        follower.toString(),
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        'Follower',
-                                        style: TextStyle(
-                                          color: Color.fromRGBO(128, 128, 128, 1.0),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0,right: 10.0),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        following.toString(),
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        'Following',
-                                        style: TextStyle(
-                                          color: Color.fromRGBO(128, 128, 128, 1.0),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // 订阅
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             Container(
               height: 5.0,
               color: Colors.black12,
@@ -420,20 +438,14 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-
 }
 
-Container displayProfile(BuildContext context){
+Container displayProfile(BuildContext context) {
   return Container(
     height: 100.0,
     child: Container(
-      padding: EdgeInsets.only(
-        top: 10.0,
-        right: 10.0,
-        left: 20.0,
-        bottom: 10.0
-      ),
+      padding:
+          EdgeInsets.only(top: 10.0, right: 10.0, left: 20.0, bottom: 10.0),
       child: Row(
         children: <Widget>[
           // 头像
@@ -455,21 +467,16 @@ Container displayProfile(BuildContext context){
           Expanded(
             child: Container(
               padding: EdgeInsets.only(
-                  top: 10.0,
-                  right: 10.0,
-                  left: 10.0,
-                  bottom: 10.0
-              ),
+                  top: 10.0, right: 10.0, left: 10.0, bottom: 10.0),
               child: Column(
                 children: <Widget>[
                   // 人气
                   Row(
                     children: <Widget>[
-                      Text('',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold
-                      ),
+                      Text(
+                        '',
+                        style: TextStyle(
+                            fontSize: 20.0, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -497,7 +504,7 @@ Container displayProfile(BuildContext context){
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.only(left: 5.0,right: 10.0),
+                        margin: EdgeInsets.only(left: 5.0, right: 10.0),
                         child: Column(
                           children: <Widget>[
                             Text(
@@ -515,7 +522,7 @@ Container displayProfile(BuildContext context){
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.only(left: 5.0,right: 10.0),
+                        margin: EdgeInsets.only(left: 5.0, right: 10.0),
                         child: Column(
                           children: <Widget>[
                             Text(
@@ -544,7 +551,6 @@ Container displayProfile(BuildContext context){
     ),
   );
 }
-
 
 class CircularLoginButton extends StatefulWidget {
   @override
@@ -595,8 +601,10 @@ class _CircularLoginButtonState extends State<CircularLoginButton> {
                 ),
                 onTap: () {
                   setState(() {
-                    User user=Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage())) as User;
-
+                    User user = Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => LoginPage())) as User;
                   });
                   //Navigator.pushNamed(context, "/login");
                 },
@@ -608,7 +616,6 @@ class _CircularLoginButtonState extends State<CircularLoginButton> {
     );
   }
 }
-
 
 class IconBadges extends StatelessWidget {
   @override
@@ -629,7 +636,7 @@ class IconBadges extends StatelessWidget {
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.notifications_active,
+                      AntIcons.follow,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -649,7 +656,7 @@ class IconBadges extends StatelessWidget {
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.star,
+                      AntIcons.favorite,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -665,11 +672,14 @@ class IconBadges extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   MaterialButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      print('点击了作品');
+                      //Navigator.push(context, MaterialPageRoute(builder: (context) => ProductPage()));
+                    },
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.notifications_active,
+                      AntIcons.product,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -697,7 +707,7 @@ class IconBadges extends StatelessWidget {
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.history,
+                      AntIcons.history,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -717,7 +727,7 @@ class IconBadges extends StatelessWidget {
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.star,
+                      AntIcons.advertisement,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -737,7 +747,7 @@ class IconBadges extends StatelessWidget {
                     color: Colors.blue,
                     textColor: Colors.white,
                     child: Icon(
-                      Icons.notifications_active,
+                      AntIcons.notification,
                       size: 24,
                     ),
                     padding: EdgeInsets.all(16),
@@ -801,7 +811,9 @@ class ListItem extends StatelessWidget {
               style: TextStyle(),
             ),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () { Navigator.pushNamed(context, "/sample");},
+            onTap: () {
+              Navigator.pushNamed(context, "/sample");
+            },
           ),
           Divider(
             indent: 16.0,

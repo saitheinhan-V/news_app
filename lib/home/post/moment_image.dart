@@ -5,14 +5,14 @@ import 'package:news/models/check_time.dart';
 class MomentImage extends StatefulWidget {
   final List<String> image;
   final int height;
-  MomentImage({Key key,this.image,this.height}):super(key: key);
+
+  MomentImage({Key key, this.image, this.height}) : super(key: key);
 
   @override
   _MomentImageState createState() => _MomentImageState();
 }
 
 class _MomentImageState extends State<MomentImage> {
-
   List list = [
     'https://images.unsplash.com/photo-1502117859338-fd9daa518a9a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
     'https://images.unsplash.com/photo-1554321586-92083ba0a115?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
@@ -20,234 +20,225 @@ class _MomentImageState extends State<MomentImage> {
     'https://images.unsplash.com/photo-1543922596-b3bbaba80649?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
     'https://images.unsplash.com/photo-1502943693086-33b5b1cfdf2f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=668&q=80',
   ];
-  List<String> imgList=[];
-  var height=0;
-  bool one=false,two=false,three=false,four=false,five=false;
-  int len=0;
-  var baseUrl="http://192.168.0.119:3000/public/";
+  List<String> imgList = [];
+  var height = 0;
+  bool one = false, two = false, three = false, four = false, five = false;
+  int len = 0;
+  var baseUrl = "http://192.168.0.119:3000/public/";
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    imgList=widget.image;
-   // height=widget.height;
+    imgList = widget.image;
+    // height=widget.height;
     checkHeight();
   }
 
-  void checkHeight(){
-    if(imgList.length==1){
-      height=200;
-      five=true;
-    }else if(imgList.length==3){
-      height=100;
-      one=true;
-    }else if(imgList.length==2){
-      height=150;
-      four=true;
-    } else if(imgList.length>3 && imgList.length<=6){
-      height=200;
-      one=true;
-      two=true;
+  void checkHeight() {
+    if (imgList.length == 1) {
+      height = 200;
+      five = true;
+    } else if (imgList.length == 3) {
+      height = 100;
+      one = true;
+    } else if (imgList.length == 2) {
+      height = 150;
+      four = true;
+    } else if (imgList.length > 3 && imgList.length <= 6) {
+      height = 200;
+      one = true;
+      two = true;
       print(imgList.length);
       setLength(imgList.length);
-    }else if(imgList.length>6 && imgList.length<=9){
-      height=300;
-      one=true;two=true;three=true;
+    } else if (imgList.length > 6 && imgList.length <= 9) {
+      height = 300;
+      one = true;
+      two = true;
+      three = true;
       setLength(imgList.length);
     }
   }
 
-  void setLength(int length){
-    if(length==8 || length==5){
-      len=1;
-    }else if(length==9 || length==6){
-      len=2;
-    }else if(length==7){
-      len=0;
-    }else if(length==4){
-      len=5;
+  void setLength(int length) {
+    if (length == 8 || length == 5) {
+      len = 1;
+    } else if (length == 9 || length == 6) {
+      len = 2;
+    } else if (length == 7) {
+      len = 0;
+    } else if (length == 4) {
+      len = 5;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-   // return _imageAllContent(height,imageList.length);
+    // return _imageAllContent(height,imageList.length);
     return Container(
       height: height.toDouble(),
       child: Column(
         children: <Widget>[
-          one? Container(
-            height: 100.0,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: imageContent(imgList[0]),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: imageContent(imgList[1]),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: imageContent(imgList[2]),
-                ),
-              ],
-            ),
-          ) : Container(),
-          two? Container(
-            height: 100.0,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: imageContent(imgList[3]),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: (len==0 || len==1 || len==2)? imageContent(imgList[4]) : Container(),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ((len==0 || len==2) || imgList.length==8)? imageContent(imgList[5]) : Container(),
-                ),
-              ],
-            ),
-          ) : Container(),
-          three? Container(
-            height: 100.0,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: imageContent(imgList[6]),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: (len==1 || len==2)? imageContent(imgList[7]) : Container(),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: (len==2)? imageContent(imgList[8]) : Container(),
-                ),
-              ],
-            ),
-          ) : Container(),
-          four? Container(
-            height: 150.0,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                    flex: 1,
-                    child: Container(
-                      height: 150.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: Container(
-                          margin: EdgeInsets.all(2.0),
-//                        child: CachedNetworkImage(
-//                          imageUrl: baseUrl+imgList[0],
-//                          //placeholder: (context, url) => CircularProgressIndicator(),
-//                          errorWidget: (context, url, error) => Icon(Icons.error),
-//                          fit: BoxFit.cover,
-//                        ),
-                          //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(baseUrl+imgList[0]),
-                                fit: BoxFit.cover,
-                              ),
-                            borderRadius: BorderRadius.circular(5.0),
-
-                          ),
-                        ),
+          one
+              ? Container(
+                  height: 100.0,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: imageContent(imgList[0]),
                       ),
-                    )
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Container(
-                      height: 150.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: Container(
-                          margin: EdgeInsets.all(2.0),
-//                        child: CachedNetworkImage(
-//                          imageUrl: baseUrl+imgList[1],
-//                          //placeholder: (context, url) => CircularProgressIndicator(),
-//                          errorWidget: (context, url, error) => Icon(Icons.error),
-//                          fit: BoxFit.cover,
-//                        ),
-                          //child: Image.network(baseUrl+imgList[1],fit: BoxFit.cover,),
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(baseUrl+imgList[1]),
-                                fit: BoxFit.cover,
-                              ),
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-
-                        ),
+                      Expanded(
+                        flex: 1,
+                        child: imageContent(imgList[1]),
                       ),
-                    )
-                ),
-              ],
-            ),
-          ) : Container(),
-          five? Container(
-            height: 200.0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5.0),
-              child: Container(
-                margin: EdgeInsets.only(left: 10.0,right: 10.0,top: 5.0,bottom: 5.0),
-//              child: CachedNetworkImage(
-//                imageUrl: baseUrl+imgList[0],
-//                //placeholder: (context, url) => CircularProgressIndicator(),
-//                errorWidget: (context, url, error) => Icon(Icons.error),
-//                fit: BoxFit.cover,
-//              ),
-              //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(baseUrl+imgList[0]),
-                      fit: BoxFit.cover,
+                      Expanded(
+                        flex: 1,
+                        child: imageContent(imgList[2]),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
+          two
+              ? Container(
+                  height: 100.0,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: imageContent(imgList[3]),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: (len == 0 || len == 1 || len == 2)
+                            ? imageContent(imgList[4])
+                            : Container(),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: ((len == 0 || len == 2) || imgList.length == 8)
+                            ? imageContent(imgList[5])
+                            : Container(),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
+          three
+              ? Container(
+                  height: 100.0,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: imageContent(imgList[6]),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: (len == 1 || len == 2)
+                            ? imageContent(imgList[7])
+                            : Container(),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child:
+                            (len == 2) ? imageContent(imgList[8]) : Container(),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
+          four
+              ? Container(
+                  height: 150.0,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                          flex: 1,
+                          child: Container(
+                            height: 150.0,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5.0),
+                              child: Container(
+                                margin: EdgeInsets.all(2.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: baseUrl + imgList[0],
+                                  //placeholder: (context, url) => CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                  fit: BoxFit.cover,
+                                ),
+                                //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
+                              ),
+                            ),
+                          )),
+                      Expanded(
+                          flex: 1,
+                          child: Container(
+                            height: 150.0,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5.0),
+                              child: Container(
+                                margin: EdgeInsets.all(2.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: baseUrl + imgList[1],
+                                  //placeholder: (context, url) => CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                  fit: BoxFit.cover,
+                                ),
+                                //child: Image.network(baseUrl+imgList[1],fit: BoxFit.cover,),
+                              ),
+                            ),
+                          )),
+                    ],
+                  ),
+                )
+              : Container(),
+          five
+              ? Container(
+                  height: 200.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5.0),
+                    child: Container(
+                      margin: EdgeInsets.only(
+                          left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
+                      child: CachedNetworkImage(
+                        imageUrl: baseUrl + imgList[0],
+                        //placeholder: (context, url) => CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        fit: BoxFit.cover,
+                      ),
+                      //child: Image.network(baseUrl+imgList[0],fit: BoxFit.cover,),
                     ),
-                  borderRadius: BorderRadius.circular(5.0),
-                ),
-              ),
-            ),
-          ): Container(),
+                  ),
+                )
+              : Container(),
         ],
       ),
     );
   }
 
-  Container imageContent(String image){
+  Container imageContent(String image) {
     return Container(
       height: 100.0,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(5.0),
         child: Container(
           margin: EdgeInsets.all(2.0),
-//        child: CachedNetworkImage(
-//          imageUrl: baseUrl+image,
-//         // placeholder: (context, url) => CircularProgressIndicator(),
-//          errorWidget: (context, url, error) => Icon(Icons.error),
-//          fit: BoxFit.cover,
-//        ),
-          //child: Image.network(baseUrl+image,fit: BoxFit.cover,),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(baseUrl+image),
+          child: CachedNetworkImage(
+            imageUrl: baseUrl + image,
+            // placeholder: (context, url) => CircularProgressIndicator(),
+            errorWidget: (context, url, error) => Icon(Icons.error),
             fit: BoxFit.cover,
           ),
-          borderRadius: BorderRadius.circular(5.0),
-        ),
+          //child: Image.network(baseUrl+image,fit: BoxFit.cover,),
         ),
       ),
     );
   }
+
 //
 //  Container _imageAllContent(int height,int len) {
 //    return height>199 && height!=0? _content(height,len) :  _manyContent(height,len);
@@ -285,7 +276,6 @@ class _MomentImageState extends State<MomentImage> {
 //    );
 //  }
 
-
 //  _oneContent(int height, int length) {
 //    return Container(
 //      height: height.toDouble(),
@@ -298,14 +288,13 @@ class _MomentImageState extends State<MomentImage> {
   _threeSixNineContent(int height, int length) {
     return Container(
       height: height.toDouble(),
-      padding: EdgeInsets.only(left: 10.0,right: 10.0),
+      padding: EdgeInsets.only(left: 10.0, right: 10.0),
       child: GridView.count(
         primary: false,
         crossAxisCount: 3,
         crossAxisSpacing: 3,
         mainAxisSpacing: 3,
-        children: List<Widget>.generate(
-            length, (index){
+        children: List<Widget>.generate(length, (index) {
           return new GridTile(
             child: Card(
               child: Center(
@@ -314,8 +303,7 @@ class _MomentImageState extends State<MomentImage> {
                   width: 80.0,
                   margin: EdgeInsets.all(5.0),
                   decoration: BoxDecoration(
-                    border: Border.all(
-                        color: Colors.blueAccent, width: 2.0),
+                    border: Border.all(color: Colors.blueAccent, width: 2.0),
                     color: Colors.white,
                     borderRadius: BorderRadius.all(
                       Radius.circular(5.0),
@@ -359,8 +347,7 @@ class _MomentImageState extends State<MomentImage> {
               ),
             ),
           );
-        }
-        ),
+        }),
       ),
     );
   }

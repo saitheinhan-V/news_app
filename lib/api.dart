@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
+import 'package:news/models/video.dart';
+
+import 'database/database.dart';
 import 'models/article.dart';
 import 'models/category.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'models/check_time.dart';
 import 'models/follow.dart';
 import 'models/moment.dart';
+import 'models/user.dart';
 
 class Api {
   // iconName 首页
@@ -84,6 +89,26 @@ class Api {
 
   static const DELETE_FOLLOWER_URL = BASIC_URL + "/api/follower/delete/";
 
+  //  俺老孙自己的
+  static const USER_PROFILE_INFO_URL = BASIC_URL + "api/auth/user/info";
+
+  static const FEEDBACK_URL = BASIC_URL + "api/auth/feedback";
+
+  static const UPDATE_USER_NAME_URL = BASIC_URL + "api/auth/user/update/name";
+
+  static const UPDATE_USER_PROFILE_IMAGE_URL = BASIC_URL + "api/auth/user/update/profileimage";
+
+  static const UPDATE_USER_INTRODUCTION_URL = BASIC_URL + "api/auth/user/update/introduction";
+
+  static const UPDATE_USER_GENDER_URL = BASIC_URL + "api/auth/user/update/gender";
+
+  static const UPDATE_USER_BIRTHDAY_URL = BASIC_URL + "api/auth/user/update/birthday";
+
+  static const GET_USER_ARTICLE_PRODUCT = BASIC_URL + "api/auth/user/product/article";
+
+  static const GET_VIDEO_URL = BASIC_URL + "/api/video/all";
+  static const POST_VIDEOS = BASIC_URL + "api/videopost";
+
 
   // 文章
   static Future fetchArticles(int pageNum, {int cid}) async {
@@ -98,15 +123,6 @@ class Api {
       var data= body['data'];
       for(int i=0;i<data.length;i++){
         Map map= data[i];
-//        var createdDate = data[i]['Createdate'];
-//        var arr= createdDate.split('-');
-//        var arr1= arr[2].split(':');
-//        var arr2= arr1[0].split('T');
-//        DateTime created= DateTime(int.parse(arr[0]),int.parse(arr[1]),int.parse(arr2[0]),int.parse(arr2[1]),int.parse(arr1[1]));
-//        DateTime now=DateTime.now();
-//        String date=Check().checkDate(created, now);
-//
-//        Article article = new Article(data[i]['Articlepostid'], data[i]['Userpostid'], data[i]['Userid'], data[i]['Categoryid'], data[i]['Caption'], data[i]['Content'], data[i]['Cover'], data[i]['Viewcount'], data[i]['Likecount'], date);
         Article article=Article.fromJson(map);
         articles.add(article);
       }
@@ -130,31 +146,28 @@ class Api {
       var body= jsonDecode(res.body);
       var data=body['data']['category'];
       print("--------" + data.length.toString());
+      SQLiteDbProvider.db.deleteCategory();
       for(int i=0;i<data.length;i++){
         Category category=new Category(data[i]['Categoryid'], data[i]['Categoryname'], data[i]['Categoryorder']);
         categoryLists.add(category);
+        SQLiteDbProvider.db.insertCategory(category);
       }
     }
     return categoryLists;
   }
 
-  static Future fetchMoments({int id}) async{
+  static Future fetchMoments() async{
     await Future.delayed(Duration(seconds: 2));
     List<Moment> moments=[];
     List<Follow> followList=[];
+    int userID=0;
 
-    var res=await http.post(GETFOLLOWING_URL,body: {
-      "Followerid" : id.toString(),
-    });
-    if(res.statusCode ==200){
-      var body=jsonDecode(res.body);
-      var data=body['data']['following'];
-      for(var n=0;n<data.length;n++){
-        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
-        followList.add(follow);
-      }
+    List<User> userLists = await SQLiteDbProvider.db.getUser();
+    if(userLists.length != 0){
+      userID=userLists[0].userID;
     }
-    print('Following list***'+followList.length.toString()+"****"+id.toString());
+    followList= await getFollower(userID);
+    print('Following list***'+followList.length.toString()+"****"+userID.toString());
 
     for(int i=0;i<followList.length;i++){
       Follow follow=followList[i];
@@ -175,22 +188,61 @@ class Api {
     return moments;
   }
 
-//  static Future getFollower(int userId) async{
-//    List<Follow> follows= List<Follow>();
-//    var response=await http.post(GETFOLLOWING_URL,body: {
-//      "Followerid" : userId.toString(),
-//    });
-//    if(response.statusCode ==200){
-//      var body=jsonDecode(response.body);
-//      var data=body['data']['following'];
-//      for(var n=0;n<data.length;n++){
-//        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
-//        follows.add(follow);
-//      }
-//    }
-//
-//    return follows;
-//  }
+  static Future getFollower(int userId) async{
+    List<Follow> follows= List<Follow>();
+    var response=await http.post(GETFOLLOWING_URL,body: {
+      "Followerid" : userId.toString(),
+    });
+    if(response.statusCode ==200){
+      var body=jsonDecode(response.body);
+      var data=body['data']['following'];
+      for(var n=0;n<data.length;n++){
+        Follow follow=new Follow(data[n]['Followid'],data[n]['Userid'],data[n]['Followerid'],data[n]['Followdate']);
+        follows.add(follow);
+      }
+    }
+
+    return follows;
+  }
+
+  static Future checkUser() async {
+    Future<List<User>> futureList = SQLiteDbProvider.db.getUser();
+    List<User> userLists = await futureList;
+    return userLists;
+  }
+
+  static Future getVideo({int cid}) async {
+    List<Video> videos = List<Video>();
+    await Future.delayed(Duration(seconds: 2));
+
+    var response =await http.post(GET_VIDEO_URL,body: {
+      'Categoryid' : cid.toString(),
+    });
+
+    if (response.statusCode == 200) {
+      var body = jsonDecode(response.body);
+      var data= body['data'];
+      for (int i = 0; i < data.length; i++) {
+        Map map=data[i];
+        Video video= Video.fromJson(map);
+        videos.add(video);
+//        Video video = Video(
+//            data[i]['Videopostid'],
+//            data[i]['Videourl'],
+//            data[i]['Caption'],
+//            data[i]['Categoryid'],
+//            data[i]['Userpostid'],
+//            data[i]['Userid'],
+//            data[i]['Description'],
+//            data[i]['Viewcount'],
+//            data[i]['Likecount'],
+//            data[i]['Createdate']);
+
+      }
+    }
+    print("Video length*******" + videos.length.toString());
+    return videos;
+  }
 
 
 }

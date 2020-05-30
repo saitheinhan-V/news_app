@@ -148,7 +148,7 @@ class _MomentPostState extends State<MomentPost> {
   }
 
   Future<bool> _onBackPressed(){
-    return (isWriting || list.length>1)? showDialog(
+    return showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext c){
@@ -173,7 +173,7 @@ class _MomentPostState extends State<MomentPost> {
             ],
           );
         }
-    ): false;
+    ) ?? false;
   }
 
   newMomentPost(String userPostToken,String caption,String image,int like) async{

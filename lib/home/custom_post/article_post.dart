@@ -126,7 +126,7 @@ class _ArticlePostState extends State<ArticlePost> {
   }
 
   Future<bool> onBackPressed(){
-    return _controller!=null? showDialog(
+    return showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext c){
@@ -152,7 +152,7 @@ class _ArticlePostState extends State<ArticlePost> {
             ],
           );
         }
-    ): false;
+    ) ?? false;
   }
 
   Future<List<Token>> checkToken() async{

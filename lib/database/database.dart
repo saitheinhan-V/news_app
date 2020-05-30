@@ -5,6 +5,7 @@ import 'package:news/models/category.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/models/following.dart';
 import 'package:news/models/token.dart';
+import 'package:news/models/user_info.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -28,7 +29,7 @@ class SQLiteDbProvider {
     String path = join(documentsDirectory.path, "News.db");
     return await openDatabase(
         path,
-        version: 2,
+        version: 1,
         onOpen: (db) {},
         onCreate: (Database db, int version) async {
           await db.execute("CREATE TABLE User ("
@@ -71,7 +72,7 @@ class SQLiteDbProvider {
           );
 
           await db.execute("CREATE TABLE Category("
-             "categoryID INTEGER PRIMARY KEY,"
+             "categoryID INTEGER,"
               "categoryName TEXT,"
               "categoryOrder INTEGER"
               ")"
@@ -158,6 +159,60 @@ class SQLiteDbProvider {
       tokens.add(token);
     });
     return tokens;
+  }
+
+  Future<UserInfo> getUserInfo() async {
+    final db = await database;
+    List<Map> results = await db.query("UserInfo", columns: UserInfo.columns);
+    UserInfo info;
+    results.forEach((result) {
+      UserInfo userInfo = UserInfo.fromMap(result);
+      info = userInfo;
+    });
+    return info;
+  }
+
+  Future<String> getTokenString() async {
+    final db = await database;
+    String str;
+    List<Map> results = await db.query("Token", columns: Token.columns);
+    results.forEach((result) {
+      Token token = Token.fromMap(result);
+      str = token.value;
+    });
+    return str;
+  }
+
+  Future<void> updateUserInfo(UserInfo userInfo) async {
+    print("Updating UserInfo in MYSQLite................");
+    final db = await database;
+    print("DB Connecting..............");
+    await db.update(
+      "UserInfo",
+      userInfo.toMap(),
+      where: "uid = ?",
+      whereArgs: [userInfo.uid],
+    );
+    print("MYSQLite UserInfo table updated!");
+  }
+
+  insertUserInfo(UserInfo userInfo) async {
+    print("Inserting UserInfo in MYSQLite................");
+    final db = await database;
+    print("DB Connecting..............");
+    var result = await db.rawInsert(
+        "INSERT Into UserInfo (uid, userName, avatorImage, introduction, gender, birthday, phone) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          userInfo.uid,
+          userInfo.userName,
+          userInfo.avatorImage,
+          userInfo.introduction,
+          userInfo.gender,
+          userInfo.birthday,
+          userInfo.phone
+        ]);
+    print("MYSQLite UserInfo table inserted!");
+    return result;
   }
 
 

@@ -28,16 +28,26 @@ class ArticleListModel extends ViewStateRefreshListModel {
 }
 
 class MomentListModel extends ViewStateRefreshListModel {
-  final int uid;
 
-  MomentListModel(this.uid);
+  MomentListModel();
 
   @override
   Future<List> loadData({int pageNum}) async{
-    return await Api.fetchMoments(id: uid);
+    return await Api.fetchMoments();
   }
 
 
+}
+
+class VideoListModel extends ViewStateRefreshListModel {
+  final int cid;
+
+  VideoListModel(this.cid);
+
+  @override
+  Future<List> loadData({int pageNum}) async {
+    return await Api.getVideo(cid: cid);
+  }
 }
 
 /// 网址导航

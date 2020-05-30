@@ -26,20 +26,20 @@ class _HotPeopleState extends State<HotPeople> {
                       fontWeight: FontWeight.w400,
                       color: Colors.black)),
             ),
-//            Container(
-//                height: MediaQuery.of(context).size.height,
-//                child: GridView.count(
-//                  crossAxisCount: 3,
-//                  crossAxisSpacing: 1,
-//                  mainAxisSpacing: 1,
-//                  childAspectRatio: 0.67,
-//                  primary: false,
-//                  children: <Widget>[
-//                    ...instructors.map((e) {
-//                      return buildInstructorGrid(e);
-//                    }).toList()
-//                  ],
-//                ))
+            Container(
+                height: MediaQuery.of(context).size.height,
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 1,
+                  mainAxisSpacing: 1,
+                  childAspectRatio: 0.67,
+                  primary: false,
+                  children: <Widget>[
+                    ...instructors.map((e) {
+                      return buildInstructorGrid(e);
+                    }).toList()
+                  ],
+                ))
           ],
         ),
       ),

@@ -191,8 +191,7 @@ class _FileVideoPostState extends State<FileVideoPost> {
   }
 
   Future<bool> _onBackPressed() {
-    return videoFile != null
-        ? showDialog(
+    return showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext c) {
@@ -215,8 +214,8 @@ class _FileVideoPostState extends State<FileVideoPost> {
               ),
             ],
           );
-        })
-        : false;
+        }
+        ) ?? false;
   }
 
   @override

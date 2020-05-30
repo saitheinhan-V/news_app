@@ -4,6 +4,7 @@ import 'package:news/profile/profile_page.dart';
 import 'package:news/explore/explore_page.dart';
 import 'package:news/video/video_page.dart';
 import 'package:flutter/cupertino.dart';
+import  'package:news/ant_icon.dart' ;
 
 
 
@@ -64,20 +65,20 @@ class _IndexPageState extends State<IndexPage> with SingleTickerProviderStateMix
         selectedFontSize: 15.0,
         items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              title: Text('Home')
+              icon: _selectedIndex == 0 ? new Icon(AntIcons.home_fill,) : new Icon(AntIcons.home,),
+              title: Text('首页')
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.ondemand_video),
-              title: Text('Video')
+              icon: _selectedIndex == 1 ? new Icon(AntIcons.play_video_fill) : new Icon(AntIcons.play_video,),
+              title: Text('视屏')
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.explore),
-              title: Text('Explore')
+              icon: _selectedIndex == 2 ? new Icon(AntIcons.explore_fill) : new Icon(AntIcons.explore,),
+              title: Text('动态',)
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              title: Text('Profile')
+              icon: _selectedIndex == 3 ? new Icon(AntIcons.profile_fill) : new Icon(AntIcons.profile,),
+              title: Text('我的')
           ),
         ],
       ),

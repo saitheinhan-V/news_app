@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:news/api.dart';
@@ -374,7 +375,12 @@ class _ArticleContentState extends State<ArticleContent> {
                         padding: EdgeInsets.fromLTRB(3.0, 0.0, 3.0, 0.0),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(5.0),
-                            child: Image.network(baseUrl+imageList[0],fit: BoxFit.cover,)),
+                           // child: Image.network(baseUrl+imageList[0],fit: BoxFit.cover,)
+                          child: CachedNetworkImage(
+                            imageUrl: baseUrl+imageList[0],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                   ) : Container(
                       height: 200.0,
@@ -382,7 +388,12 @@ class _ArticleContentState extends State<ArticleContent> {
                       margin: EdgeInsets.fromLTRB(3.0, 0.0, 3.0, 0.0),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(5.0),
-                          child: Image.network(baseUrl+imageList[0],fit: BoxFit.cover,)),
+                          //child: Image.network(baseUrl+imageList[0],fit: BoxFit.cover,)
+                        child: CachedNetworkImage(
+                          imageUrl: baseUrl+imageList[0],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   imageList.length>=3? Expanded(
                     flex: 1,
@@ -391,7 +402,12 @@ class _ArticleContentState extends State<ArticleContent> {
                       padding: EdgeInsets.fromLTRB(3.0, 0.0, 3.0, 0.0),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(5.0),
-                          child: Image.network(baseUrl+imageList[1],fit: BoxFit.cover,)),
+                          //child: Image.network(baseUrl+imageList[1],fit: BoxFit.cover,)
+                        child: CachedNetworkImage(
+                          imageUrl: baseUrl+imageList[1],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ) : Container(),
                   imageList.length>3? Expanded(
@@ -401,7 +417,12 @@ class _ArticleContentState extends State<ArticleContent> {
                       padding: EdgeInsets.fromLTRB(3.0, 0.0, 3.0, 0.0),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(5.0),
-                          child: Image.network(baseUrl+imageList[2],fit: BoxFit.cover,)),
+                          //child: Image.network(baseUrl+imageList[2],fit: BoxFit.cover,)
+                        child: CachedNetworkImage(
+                          imageUrl: baseUrl+imageList[2],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ): Container(),
                 ],
@@ -409,61 +430,64 @@ class _ArticleContentState extends State<ArticleContent> {
             ),
           )
           : Container(height: 0.0,),
-          Container(
-            color: Colors.black12,
-            height: 1.0,
-            margin: EdgeInsets.only(top: 5.0),
+          SizedBox(
+            height: 5,
           ),
-          GestureDetector(
-            onTap: (){
-              setState(() {
-                _setPage(context);
-              });
-            },
-            child: Container(
-              height: 30.0,
-              padding: EdgeInsets.only(left: 10.0,right: 10.0,top: 2.0,bottom: 2.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(name,
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text('$comment Comment',
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(date,
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+//          Container(
+//            color: Colors.black12,
+//            height: 1.0,
+//            margin: EdgeInsets.only(top: 5.0),
+//          ),
+//          GestureDetector(
+//            onTap: (){
+//              setState(() {
+//                _setPage(context);
+//              });
+//            },
+//            child: Container(
+//              height: 30.0,
+//              padding: EdgeInsets.only(left: 10.0,right: 10.0,top: 2.0,bottom: 2.0),
+//              child: Row(
+//                crossAxisAlignment: CrossAxisAlignment.center,
+//                mainAxisAlignment: MainAxisAlignment.center,
+//                children: <Widget>[
+//                  Expanded(
+//                    flex: 1,
+//                    child: Center(
+//                      child: Text(name,
+//                        style: TextStyle(
+//                          color: Colors.black54,
+//                          fontSize: 12.0,
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                  Expanded(
+//                    flex: 1,
+//                    child: Center(
+//                      child: Text('$comment Comment',
+//                        style: TextStyle(
+//                          color: Colors.black54,
+//                          fontSize: 12.0,
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                  Expanded(
+//                    flex: 1,
+//                    child: Center(
+//                      child: Text(date,
+//                        style: TextStyle(
+//                          color: Colors.black54,
+//                          fontSize: 12.0,
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                ],
+//              ),
+//            ),
+//          ),
           Container(
             height: 5.0,
             padding: EdgeInsets.only(top: 5.0,),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news/profile/setting/edit_profile_page.dart';
 
 class SettingPage extends StatelessWidget {
   @override
@@ -42,6 +43,7 @@ class SettingPage extends StatelessWidget {
             ),
             ListItem(
               title: '编辑资料',
+              page: EditProfilePage(),
             ),
             Divider(
               thickness: 1.0,

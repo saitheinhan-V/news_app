@@ -429,16 +429,21 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
                                     child: OutlineButton(
                                       onPressed: (){
                                         setState(() {
-                                          if(isLiked){
-                                            isLiked=false;
-                                            like=like-1;
-                                            deleteLikeRecord(userID, article.articlePostID);
+                                          if(userID !=0){
+                                            if(isLiked){
+                                              isLiked=false;
+                                              like=like-1;
+                                              deleteLikeRecord(userID, article.articlePostID);
+                                            }else{
+                                              isLiked=true;
+                                              like=like+1;
+                                              insertLikeRecord(userID, article.articlePostID);
+                                            }
+                                            updateArticleLike(article.articlePostID, like);
                                           }else{
-                                            isLiked=true;
-                                            like=like+1;
-                                            insertLikeRecord(userID, article.articlePostID);
+
                                           }
-                                          updateArticleLike(article.articlePostID, like);
+
                                         });
                                       },
                                       shape: StadiumBorder(),
@@ -654,7 +659,7 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
           ),
           Expanded(
             flex: 4,
-            child: (article.userID != userID)? GestureDetector(
+            child: (article.userID != userID && userID !=0)? GestureDetector(
               onTap: (){
                 setState(() {
                   if(first){
@@ -905,16 +910,21 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
                 new IconButton(icon: Icon(Icons.thumb_up,color: isLiked? Colors.blue:Colors.grey,),
                   onPressed: () {
                     setState(() {
-                      if(isLiked){
-                        isLiked=false;
-                        like=like-1;
-                        deleteLikeRecord(userID, article.articlePostID);
+                      if(userID !=0) {
+                        if(isLiked){
+                          isLiked=false;
+                          like=like-1;
+                          deleteLikeRecord(userID, article.articlePostID);
+                        }else{
+                          isLiked=true;
+                          like=like+1;
+                          insertLikeRecord(userID, article.articlePostID);
+                        }
+                        updateArticleLike(article.articlePostID, like);
                       }else{
-                        isLiked=true;
-                        like=like+1;
-                        insertLikeRecord(userID, article.articlePostID);
+                        //write something
                       }
-                      updateArticleLike(article.articlePostID, like);
+
                     });
                   },),
                 like != 0 ? new Positioned(
