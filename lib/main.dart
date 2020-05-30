@@ -16,6 +16,7 @@ import 'package:news/profile/register/register_page.dart';
 import 'package:http/http.dart' as http;
 import 'database/database.dart';
 import 'models/category.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() => runApp(MyApp());
 
@@ -39,6 +40,15 @@ class MyApp extends StatelessWidget {
       },
       home: Splash(),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('zh', 'CH'),
+        const Locale('en', 'US'),
+      ],
     );
   }
 }

@@ -47,7 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       getUserInfo().then((UserInfo info)  {
             setState(() {
               userName = info.userName;
-              avatorImage = info.avatorImage;
+              avatorImage = Api.BASIC_URL + "public/"+info.avatorImage;
               intro = info.introduction;
               birthday = info.birthday;
               sex = info.gender;
@@ -126,7 +126,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       UserInfo info = UserInfo.fromJson(userMap);
       await SQLiteDbProvider.db.updateUserInfo(info);
       setState(() {
-        avatorImage = info.avatorImage;
+        print(info.avatorImage);
+        avatorImage = Api.BASIC_URL+"public/"+info.avatorImage;
       });
     } else {
       print('头像更换失败!');

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:news/api.dart';
 import 'package:news/models/follow.dart';
+import 'package:news/models/user_info.dart';
 import 'package:news/profile/register/register_page.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -403,6 +404,22 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
 
   }
 
+  // get user info:{uid,name,avatorImage,introduction,gender,birthday,phone}
+  Future<UserInfo> _getInfo(String token) async {
+    var authorizeUrl = Api.USER_PROFILE_INFO_URL;
+    UserInfo info;
+    var response = await http
+        .get(authorizeUrl, headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200){
+      var userInfo = jsonDecode(response.body);
+      Map userMap = userInfo['data']['info'];
+      info = UserInfo.fromJson(userMap);
+    } else {
+      print(response.statusCode);
+    }
+    return info;
+  }
+
   _logIn(String phone,String password) async{
 
     progressDialog.show();
@@ -422,9 +439,11 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
         SQLiteDbProvider.db.deleteToken();
         SQLiteDbProvider.db.insertToken(token);
         User user= await _getUserInfo(token);
+        UserInfo userInfo = await _getInfo(token);
          //insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
+        SQLiteDbProvider.db.insertUserInfo(userInfo);
         progressDialog.hide();
         Navigator.pop(context , user);
       }

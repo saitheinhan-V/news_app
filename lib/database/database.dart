@@ -78,6 +78,19 @@ class SQLiteDbProvider {
               ")"
           );
 
+          await db.execute("CREATE TABLE UserInfo ("
+              "uid INTEGER PRIMARY KEY,"
+              "userName TEXT,"
+              "avatorImage TEXT,"
+              "introduction TEXT,"
+              "gender INT,"
+              "birthday TEXT,"
+              "phone TEXT"
+              ")");
+
+
+
+
           //db.execute("insert into quotes (quote, author) values ('Be happy in the moment, that’s enough. Each moment is all we need, not more.', 'Mother Teresa')");
           // db.execute("insert into quotes (quote, author) values ('Be here now', 'Ram Dass')");
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:news/api.dart';
 import 'package:news/models/follow.dart';
+import 'package:news/models/user_info.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -200,6 +201,22 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
     );
   }
 
+  // get user info:{uid,name,avatorImage,introduction,gender,birthday,phone}
+  Future<UserInfo> _getInfo(String token) async {
+    var authorizeUrl = Api.USER_PROFILE_INFO_URL;
+    UserInfo info;
+    var response = await http
+        .get(authorizeUrl, headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200){
+      var userInfo = jsonDecode(response.body);
+      Map userMap = userInfo['data']['info'];
+      info = UserInfo.fromJson(userMap);
+    } else {
+      print(response.statusCode);
+    }
+    return info;
+  }
+
   _signUp(String name, String phoneNo, String passWord) async{
     pr.show();
 
@@ -220,9 +237,11 @@ class _RegisterFormDemoState extends State<RegisterFormDemo> {
         SQLiteDbProvider.db.deleteToken();
         SQLiteDbProvider.db.insertToken(token);
         User user= await _getUserInfo(token);
+        UserInfo userInfo = await _getInfo(token);
         //insertFollower(user.userID);
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
+        SQLiteDbProvider.db.insertUserInfo(userInfo);
         pr.hide();
         Navigator.pop(context , user);
       }
