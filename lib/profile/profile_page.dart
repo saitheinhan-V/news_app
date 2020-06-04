@@ -177,11 +177,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<List<Following>> checkFollowing(int id) async {
-    List<Following> followings = await SQLiteDbProvider.db
-        .getFollowing(); //check currently following user from sqflite database
+    List<Following> followings = await SQLiteDbProvider.db.getFollowing(); //check currently following user from sqflite database
     if (followings.length == 0) {
-      List<Follow> followList =
-          await getFollower(id); //get following list from server
+      List<Follow> followList = await getFollower(id); //get following list from server
       SQLiteDbProvider.db.deleteFollowing();
       List<Following> followingLists = new List<Following>();
       for (var i = 0; i < followList.length; i++) {
@@ -192,27 +190,13 @@ class _ProfilePageState extends State<ProfilePage> {
         print(res.body.toString());
         if (res.statusCode == 200) {
           var body = jsonDecode(res.body);
-          var dataUser = body['data'];
-          Following following = new Following(
-              dataUser['Userid'],
-              dataUser['Username'],
-              dataUser['Phone'],
-              dataUser['Password'],
-              dataUser['Createdate'],
-              dataUser['Profilepic'],
-              dataUser['Imei'],
-              dataUser['Qq'],
-              dataUser['Sex'],
-              dataUser['Email'],
-              dataUser['Address'],
-              dataUser['Birthday'],
-              dataUser['Introduction']);
+          Map map = body['data'];
+          Following following = Following.fromJson(map);
           SQLiteDbProvider.db.insertFollowing(following);
 
           followingLists.add(following);
           res = null;
           body = null;
-          dataUser = null;
         }
       }
       return followingLists;

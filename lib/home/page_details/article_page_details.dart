@@ -68,6 +68,7 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
   bool isShowSticker=false;
 
   Following following;
+  User user;
   Article article;
 
   @override
@@ -120,8 +121,8 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
 
     getUserInfo(article.userID).then((value){
       setState(() {
-        following=value;
-        name=following.userName;
+        user=value;
+        name=user.userName;
         isLoading=false;
       });
     });
@@ -175,15 +176,15 @@ class _ArticlePageDetailsState extends State<ArticlePageDetails> {
     return userLists;
   }
 
-  Future<Following> getUserInfo(int id) async{
+  Future<User> getUserInfo(int id) async{
     var res=await http.post(Api.USER_INFO_URL,
         body: {
           'Userid' : id.toString(),
         });
     var data=jsonDecode(res.body);
     Map userMap=data['data'];
-    Following following=Following.fromJson(userMap);
-    return following;
+    User user=User.fromJson(userMap);
+    return user;
   }
 
   Future<bool> checkLike(int user_id, int post_id) async{

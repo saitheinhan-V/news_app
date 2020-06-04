@@ -171,23 +171,23 @@ class _CommentPageState extends State<CommentPage> {
     return comment;
   }
 
-  Future<Following> getUserInfo(int id) async{
+  Future<User> getUserInfo(int id) async{
     var res=await http.post(Api.USER_INFO_URL,
         body: {
           'Userid' : id.toString(),
         });
     var data=jsonDecode(res.body);
     Map userMap=data['data'];
-    Following following=Following.fromJson(userMap);
-    return following;
+    User user=User.fromJson(userMap);
+    return user;
   }
 
   String getName(int id){
     String s;
-    Following following;
+    User user;
     getUserInfo(id).then((value){
-        following=value;
-        s = following.userName;
+        user=value;
+        s = user.userName;
         print("Name is0000000000"+s);
     });
     return s;

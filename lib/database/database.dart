@@ -29,14 +29,23 @@ class SQLiteDbProvider {
     String path = join(documentsDirectory.path, "News.db");
     return await openDatabase(
         path,
-        version: 1,
+        version: 2,
         onOpen: (db) {},
         onCreate: (Database db, int version) async {
           await db.execute("CREATE TABLE User ("
-              "userID INTEGER PRIMARY KEY,"
+              "userID INTEGER,"
               "userName TEXT,"
+              "phone TEXT,"
               "password TEXT,"
-              "phone TEXT"
+              "createDate TEXT,"
+              "profilePic TEXT,"
+              "IMEI TEXT,"
+              "QQ TEXT,"
+              "sex int,"
+              "email TEXT,"
+              "address TEXT,"
+              "birthday TEXT,"
+              "introduction TEXT"
               ")"
           );
 
@@ -242,7 +251,9 @@ class SQLiteDbProvider {
     //var maxIdResult = await db.rawQuery("SELECT MAX(id)+1 as last_inserted_id FROM User");
     //var id = maxIdResult.first["last_inserted_id"];
     var result = await db.rawInsert(
-        "INSERT Into User (userID, userName, password, phone) VALUES (?, ?, ?, ?)", [user.userID, user.userName, user.password, user.phone]);
+        "INSERT Into User (userID, userName, phone, password, createDate, profilePic, IMEI, QQ, sex, email, address, birthday, introduction) VALUES (?, ?, ?, ?, ?,?,?,?,?,?,?,?,?)",
+        [user.userID, user.userName, user.phone, user.password, user.createDate, user.profilePic, user.IMEI, user.QQ, user.sex, user.email, user.address, user.birthday, user.introduction]);
+
     return result;
   }
 

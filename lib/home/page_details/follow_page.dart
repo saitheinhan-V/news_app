@@ -21,6 +21,48 @@ import 'package:news/view_models/structure_model.dart';
 import 'package:news/view_models/view_state_widget.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+class FollowMainPage extends StatefulWidget {
+  @override
+  _FollowMainPageState createState() => _FollowMainPageState();
+}
+
+class _FollowMainPageState extends State<FollowMainPage> with AutomaticKeepAliveClientMixin{
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              FollowingContent(),
+              Container(
+                height: 5.0,
+                color: Colors.black12,
+              ),
+              FollowPageContent(),
+            ],
+          ),
+        ),
+      )
+    );
+  }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+
+}
+
+
 class FollowPageContent extends StatefulWidget {
 
 
@@ -28,8 +70,7 @@ class FollowPageContent extends StatefulWidget {
   _FollowPageContentState createState() => _FollowPageContentState();
 }
 
-class _FollowPageContentState extends State<FollowPageContent>
-    with AutomaticKeepAliveClientMixin {
+class _FollowPageContentState extends State<FollowPageContent> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -44,7 +85,6 @@ class _FollowPageContentState extends State<FollowPageContent>
   void initState() {
     // TODO: implement initState
     super.initState();
-    list = List<Widget>()..add(buildAddButton());
 
 //    checkUser().then((value) {
 //      setState(() {
@@ -92,53 +132,6 @@ class _FollowPageContentState extends State<FollowPageContent>
     return userLists;
   }
 
-  Future<List<Following>> checkFollowing(int id) async {
-    List<Following> followings = await SQLiteDbProvider.db
-        .getFollowing(); //check currently following user from sqflite database
-    if (followings == null) {
-      List<Follow> followList =
-          await getFollower(id); //get following list from server
-      SQLiteDbProvider.db.deleteFollowing();
-      List<Following> followingLists = new List<Following>();
-      for (var i = 0; i < followList.length; i++) {
-        Follow follow = followList[i];
-        var res = await http.post(Api.USER_INFO_URL, body: {
-          "Userid": follow.userID.toString(),
-        });
-        print(res.body.toString());
-        if (res.statusCode == 200) {
-          var body = jsonDecode(res.body);
-          var dataUser = body['data'];
-          //print('Data <<<<<<<'+dataUser.length.toString());
-          //followers.add(dataUser['Username']);
-          Following following = new Following(
-              dataUser['Userid'],
-              dataUser['Username'],
-              dataUser['Phone'],
-              dataUser['Password'],
-              dataUser['Createdate'],
-              dataUser['Profilepic'],
-              dataUser['Imei'],
-              dataUser['Qq'],
-              dataUser['Sex'],
-              dataUser['Email'],
-              dataUser['Address'],
-              dataUser['Birthday'],
-              dataUser['Introduction']);
-          SQLiteDbProvider.db.insertFollowing(following);
-
-          followingLists.add(following);
-          res = null;
-          body = null;
-          dataUser = null;
-        }
-      }
-      return followingLists;
-    } else {
-      return followings;
-    }
-  }
-
   Future<List<Follow>> getFollower(int userId) async {
     List<Follow> follows = List<Follow>();
     var response = await http.post(Api.GETFOLLOWING_URL, body: {
@@ -184,134 +177,6 @@ class _FollowPageContentState extends State<FollowPageContent>
     return moments;
   }
 
-  Widget buildAddButton() {
-    return Container(
-      height: 100.0,
-      width: 100.0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                //_addFollowing();
-                // showSearch(context: context, delegate: SearchPeople());
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CustomSearchPeople()));
-              });
-            },
-            child: Container(
-              width: 60,
-              height: 60,
-              child: Icon(
-                Icons.person_add,
-                color: Colors.white,
-                size: 30,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: Colors.white, width: 1.5, style: BorderStyle.solid),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue[100],
-                    offset: Offset(0.0, 7.0),
-                    blurRadius: 10.0,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 5.0,
-          ),
-          Container(
-            height: 20.0,
-            child: Center(
-              child: Text(
-                'Add People',
-                style: TextStyle(
-                  fontSize: 12.0,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFollowingProfile(String name) {
-    return Container(
-      height: 100.0,
-      width: 100.0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              // _addFollowing();
-            },
-            child: Container(
-              width: 60.0,
-              height: 60.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100.0),
-                border: Border.all(
-                  color: Colors.blue,
-                  width: 2.0,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue[100],
-                    offset: Offset(0.0, 7.0),
-                    blurRadius: 10.0,
-                  ),
-                ],
-              ),
-              child: Container(
-                height: 50.0, width: 50.0,
-                margin: EdgeInsets.all(2.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100.0),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 1.0,
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(
-                      'assets/panda.jpg',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                //child: Image.asset('assets/panda.jpg',fit: BoxFit.cover,),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 5.0,
-          ),
-          Container(
-            height: 20.0,
-            child: Center(
-              child: Text(
-                name.toString(),
-                style: TextStyle(
-                  fontSize: 12.0,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -330,108 +195,28 @@ class _FollowPageContentState extends State<FollowPageContent>
         } else if (model.isEmpty) {
           return ViewStateEmptyWidget(onPressed: model.initData);
         }
-        return SmartRefresher(
-          controller: model.refreshController,
-          header: WaterDropHeader(),
-          footer: RefresherFooter(),
-          onRefresh: model.refresh,
-          onLoading: model.loadMore,
-          enablePullUp: true,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              children: <Widget>[
-                Container(
-                  height: 100.0,
-                  width: double.infinity,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: list,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 5.0,
-                  color: Colors.black12,
-                ),
-                ListView.builder(
+        return
+//          SmartRefresher(
+//          controller: model.refreshController,
+//          header: WaterDropHeader(),
+//          footer: RefresherFooter(),
+//          onRefresh: model.refresh,
+//          onLoading: model.loadMore,
+//          enablePullUp: true,
+           //SingleChildScrollView(
+            //scrollDirection: Axis.vertical,
+            ListView.builder(
+               shrinkWrap: true,
                     itemCount: model.list.length,
-                    shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
                       Moment moment = model.list[index];
                       return MomentPage(moment: moment,);
-                    }),
-              ],
-            ),
-          ),
-        );
+                    });
+          //);
+        //);
       },
     );
-//    return Scaffold(
-//      body: RefreshIndicator(
-//        key: refreshKey,
-//        child: Container(
-//          child: SingleChildScrollView(
-//            child: Column(
-//              children: <Widget>[
-//                //FollowingContent(id: userID,),
-//                Container(
-//                  height: 100.0,
-//                  width: double.infinity,
-//                  child: SingleChildScrollView(
-//                    scrollDirection: Axis.horizontal,
-//                    child: Row(
-//                      children: list,
-//                    ),
-//                  ),
-//                ),
-//                Container(
-//                      height: 5.0,
-//                      color: Colors.black12,
-//                    ),
-//                Container(
-//                  child: FutureBuilder<List<Moment>>(
-//                    future: getMoment(followingList),
-//                    builder: (context , snapshot){
-//                      if(snapshot.hasError){
-//                        return Center(
-//                          child: Container(
-//                            margin: EdgeInsets.only(top: 50.0),
-//                            child: Column(
-//                              children: <Widget>[
-//                                Icon(Icons.error,size: 50.0,color: Colors.grey,),
-//                                SizedBox(height: 10.0,),
-//                                Text('Network Error, check your connection!',style: TextStyle(color: Colors.red,fontSize: 15.0,fontWeight: FontWeight.bold),),
-//                              ],
-//                            ),
-//                          ),
-//                        );
-//                      }else if(snapshot.hasData){
-//                        List<Moment> moments=snapshot.data;
-//                        return ListView.builder(
-//                            itemCount: moments.length,
-//                            shrinkWrap: true,
-//                            physics: ClampingScrollPhysics(),
-//                            itemBuilder: (context ,index){
-//                              return MomentPage(moment: moments[index],);
-//                            }
-//                        );
-//                      }
-//                      return SkeletonList(
-//                        builder: (context, index) => ArticleSkeletonItem(),
-//                      );
-//                    },
-//                  ),
-//                ),
-//              ],
-//            ),
-//          ),
-//        ),
-//        onRefresh: refreshList,
-//      ),
-//    );
   }
 
   List<Widget> getDelegate(List<Moment> moments) {
@@ -448,20 +233,15 @@ class _FollowPageContentState extends State<FollowPageContent>
 
 class FollowingContent extends StatefulWidget {
   final List<Following> followings;
-  final int id;
 
-  FollowingContent({Key key, this.followings, this.id}) : super(key: key);
+  FollowingContent({Key key, this.followings}) : super(key: key);
 
   @override
   _FollowingContentState createState() => _FollowingContentState();
 }
 
-class _FollowingContentState extends State<FollowingContent> {
-  var images = [
-    "adv1.jpg",
-    "adv2.jpg",
-    "adv3.jpg",
-  ];
+class _FollowingContentState extends State<FollowingContent> with AutomaticKeepAliveClientMixin{
+
 
   List<Widget> list = [];
   List<User> userList = List<User>();
@@ -473,26 +253,12 @@ class _FollowingContentState extends State<FollowingContent> {
     // TODO: implement initState
     super.initState();
     list = List<Widget>()..add(buildAddButton());
-    userID = widget.id;
-    print('userid==========' + userID.toString());
-    checkUser().then((value) {
-      setState(() {
-        userList = value;
-        if (userList.length != 0) {
-          userID = userList[0].userID;
-          if (userID != 0) {
-            checkFollowing(userID).then((value) {
-              setState(() {
-                followingList = widget.followings;
-                print('Following=====' + followingList.length.toString());
-                for (int i = 0; i < followingList.length; i++) {
-                  list.insert(list.length - 1, _buildFollowingProfile("EX"));
-                }
-              });
-            });
-          }
-        }
-      });
+
+    checkUser().then((value){
+      List<User> userList=value;
+      if(userList.length!=0){
+        userID=userList[0].userID;
+      }
     });
   }
 
@@ -503,11 +269,9 @@ class _FollowingContentState extends State<FollowingContent> {
   }
 
   Future<List<Following>> checkFollowing(int id) async {
-    List<Following> followings = await SQLiteDbProvider.db
-        .getFollowing(); //check currently following user from sqflite database
+    List<Following> followings = await SQLiteDbProvider.db.getFollowing(); //check currently following user from sqflite database
     if (followings == null) {
-      List<Follow> followList =
-          await getFollower(id); //get following list from server
+      List<Follow> followList = await getFollower(id); //get following list from server
       SQLiteDbProvider.db.deleteFollowing();
       List<Following> followingLists = new List<Following>();
       for (var i = 0; i < followList.length; i++) {
@@ -518,29 +282,15 @@ class _FollowingContentState extends State<FollowingContent> {
         print(res.body.toString());
         if (res.statusCode == 200) {
           var body = jsonDecode(res.body);
-          var dataUser = body['data'];
+          Map map = body['data'];
+          Following following=new Following.fromJson(map);
           //print('Data <<<<<<<'+dataUser.length.toString());
           //followers.add(dataUser['Username']);
-          Following following = new Following(
-              dataUser['Userid'],
-              dataUser['Username'],
-              dataUser['Phone'],
-              dataUser['Password'],
-              dataUser['Createdate'],
-              dataUser['Profilepic'],
-              dataUser['Imei'],
-              dataUser['Qq'],
-              dataUser['Sex'],
-              dataUser['Email'],
-              dataUser['Address'],
-              dataUser['Birthday'],
-              dataUser['Introduction']);
           SQLiteDbProvider.db.insertFollowing(following);
 
           followingLists.add(following);
           res = null;
           body = null;
-          dataUser = null;
         }
       }
       return followingLists;
@@ -569,80 +319,173 @@ class _FollowingContentState extends State<FollowingContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 100.0,
-      width: double.infinity,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+//    return Container(
+//      height: 100.0,
+//      width: double.infinity,
+////      child: SingleChildScrollView(
+////        scrollDirection: Axis.horizontal,
+////        child: Row(
+////          children: list,
+////        ),
+////      ),
+//      child: SingleChildScrollView(
+//        scrollDirection: Axis.horizontal,
+//        child: Row(
+//        children: <Widget>[
+//
+//        ],
+//      ),
+//    ),
+//    );
+  super.build(context);
+  return ProviderWidget<FollowingUserModel>(
+    model: FollowingUserModel(),
+    onModelReady: (model) => model.initData(),
+    builder: (context , model, child){
+      if(model.list.isNotEmpty){
+        for(var i=0;i<model.list.length;i++){
+          print("List length===="+model.list.length.toString() + "count"+i.toString() + "add++++"+list.length.toString());
+          list.insert(list.length-1, _buildFollowingProfile(model.list[i]));
+        }
+        print('total****'+list.length.toString());
+        return Container(
+          height: 100.0,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: list,
+          ),
+        );
+      }
+      return Container(
+        height: 100.0,
         child: Row(
-          children: list,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            //buildAddButton(),
+           Container(
+             height: 100.0,
+             width: 100.0,
+             child: GestureDetector(
+               onTap: (){
+                 setState(() {
+                   model.initData();
+                 });
+               },
+               child:  Column(
+                 children: <Widget>[
+                   Container(
+                       width: 60,
+                       height: 60,
+                       margin: EdgeInsets.only(top: 10.0),
+                       child: Icon(Icons.refresh, color: Colors.white, size: 20,),
+                       decoration: BoxDecoration(
+                         color: Colors.black26,
+                         shape: BoxShape.circle,
+
+                       ),
+                     ),
+
+                 ],
+               ),
+             ),
+           ),
+          ],
         ),
-      ),
-    );
+//        child: ListView.builder(
+//                        scrollDirection: Axis.horizontal,
+//                        itemCount: model.list.length,
+//                          itemBuilder: (context ,index){
+//                            Following following=model.list[index];
+//                          return _buildFollowingProfile(following);
+//                          }
+//                      ),
+      );
+                    //buildAddButton(),
+    },
+  );
   }
 
   Widget buildAddButton() {
     return Container(
       height: 100.0,
       width: 100.0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                //_addFollowing();
-                // showSearch(context: context, delegate: SearchPeople());
+      child: GestureDetector(
+        onTap: (){
+          setState(() {
+            if(userID == 0){
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (c) {
+                    return AlertDialog(
+                      title: Text('Warning'),
+                      content: Text('Please log in or register to follow more people!',
+                        style: TextStyle(height: 1.5),
+                      ),
+                      actions: <Widget>[
+                        new FlatButton(
+                            onPressed: () => Navigator.pop(c),
+                            child: new Text('Ok'))
+                      ],
+                    );
+                  });
+            }else{
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => CustomSearchPeople()));
-              });
-            },
-            child: Container(
-              width: 60,
-              height: 60,
-              child: Icon(
-                Icons.person_add,
-                color: Colors.white,
-                size: 30,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: Colors.white, width: 1.5, style: BorderStyle.solid),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue[100],
-                    offset: Offset(0.0, 7.0),
-                    blurRadius: 10.0,
+            }
+          });
+        },
+        child: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                  width: 60,
+                  height: 60,
+                  child: Icon(
+                    Icons.person_add,
+                    color: Colors.white,
+                    size: 30,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white, width: 1.5, style: BorderStyle.solid),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue[100],
+                        offset: Offset(0.0, 7.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
+                  ),
+                ),
+              SizedBox(
+                height: 5.0,
               ),
-            ),
-          ),
-          SizedBox(
-            height: 5.0,
-          ),
-          Container(
-            height: 20.0,
-            child: Center(
-              child: Text(
-                'Add People',
-                style: TextStyle(
-                  fontSize: 12.0,
+              Container(
+                height: 20.0,
+                child: Center(
+                  child: Text(
+                    'Add People',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildFollowingProfile(String name) {
+  Widget _buildFollowingProfile(Following following) {
     return Container(
       height: 100.0,
       width: 100.0,
@@ -698,7 +541,7 @@ class _FollowingContentState extends State<FollowingContent> {
             height: 20.0,
             child: Center(
               child: Text(
-                name.toString(),
+                following.userName,
                 style: TextStyle(
                   fontSize: 12.0,
                 ),
@@ -709,4 +552,8 @@ class _FollowingContentState extends State<FollowingContent> {
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

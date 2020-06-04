@@ -162,18 +162,17 @@ class ViewStateEmptyWidget extends StatelessWidget {
 //          const Icon(IconFonts.pageEmpty, size: 100, color: Colors.grey),
       //image: const Icon(Icons.hourglass_empty,size: 50.0,color: Colors.grey,),
       image: Container(
-        width: 100,
-        height: 100,
+        width: 80,
+        height: 80,
+        margin: EdgeInsets.only(top: 10.0),
         decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage("assets/loading_ox.gif"), fit: BoxFit.cover),
-            borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: Colors.black12)
+                image: AssetImage("assets/loading_empty.gif"), fit: BoxFit.cover),
         ),
 
       ),
       //title: message ?? S.of(context).viewStateMessageEmpty,
-      title: 'Empty data.....',
+      title: 'Empty post.....',
       buttonText: buttonText,
       //buttonTextData: S.of(context).viewStateButtonRefresh,
       buttonTextData: 'Refresh',

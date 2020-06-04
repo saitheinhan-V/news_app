@@ -369,7 +369,7 @@ class _HomePageState extends State<HomePage>
                       body: TabBarView(
                         children: List.generate(
                             categoryList.length,
-                            (index) => categoryList[index].categoryName=='Follow' ? FollowPageContent() : ArticlePage(id: categoryList[index].categoryID,),
+                            (index) => categoryList[index].categoryName=='Follow' ? FollowMainPage() : ArticlePage(id: categoryList[index].categoryID,),
                         ),
                       ),
                     );

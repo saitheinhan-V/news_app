@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:news/api.dart';
+import 'package:news/config/storage_manager.dart';
 import 'package:news/models/follow.dart';
 import 'package:news/models/user_info.dart';
 import 'package:news/profile/register/register_page.dart';
@@ -13,6 +14,8 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:news/models/user.dart';
 import 'package:news/database/database.dart';
 import 'package:dio/dio.dart';
+import 'package:news/view_models/user_model.dart';
+
 
 class LoginPage extends StatefulWidget {
   @override
@@ -440,7 +443,11 @@ class _PasswordLoginFormState extends State<PasswordLoginForm> {
         SQLiteDbProvider.db.insertToken(token);
         User user= await _getUserInfo(token);
         UserInfo userInfo = await _getInfo(token);
+        //UserModel().saveUser(user);
+       // StorageManager.sharedPreferences.setInt('userid', user.userID);
+        //StorageManager.localStorage.setItem("user", user.toJSONEncodable());
          //insertFollower(user.userID);
+
         SQLiteDbProvider.db.delete();
         SQLiteDbProvider.db.insert(user);
         SQLiteDbProvider.db.insertUserInfo(userInfo);

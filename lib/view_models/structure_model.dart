@@ -11,6 +11,23 @@ class StructureCategoryModel extends ViewStateListModel {
   }
 }
 
+class RecommendUserModel extends ViewStateListModel {
+
+  @override
+  Future<List> loadData() async{
+    return await Api.fetchRecommendUsers();
+  }
+
+}
+
+class FollowingUserModel extends ViewStateListModel {
+  @override
+  Future<List> loadData() async{
+    return await Api.fetchFollowing();
+  }
+
+}
+
 class ArticleListModel extends ViewStateRefreshListModel {
   final int cid;
 

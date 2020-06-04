@@ -147,96 +147,97 @@ class _HotVideosState extends State<HotVideos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: <Widget>[
-          for (var v in vc)
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: Column(
-                children: <Widget>[
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: VideoBox(
-                      controller: v,
-                      children: <Widget>[
-                        Stack(alignment: Alignment.topLeft, children: <Widget>[
-                          Positioned(
-                            child: Text(
-                              "埃弗拉第三方的",
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 20.0),
-                            ),
-                          ),
-                        ])
-                      ],
-                    ),
-                  ),
-                  Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Row(
-                            children: <Widget>[
-                              CircleAvatar(
-                                backgroundImage: NetworkImage(
-                                    "https://images.pexels.com/photos/230860/pexels-photo-230860.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    8.0, 0.0, 0.0, 0.0),
-                                child: Text("风力发电机",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                    )),
-                              )
-                            ],
+      body: ListView.builder(
+        itemCount: vc.length,
+        itemBuilder: (context, index){
+          return Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Column(
+              children: <Widget>[
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: VideoBox(
+                    controller: vc[index],
+                    children: <Widget>[
+                      Stack(alignment: Alignment.topLeft, children: <Widget>[
+                        Positioned(
+                          child: Text(
+                            "埃弗拉第三方的",
+                            style: TextStyle(
+                                color: Colors.white, fontSize: 20.0),
                           ),
                         ),
-                        Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
-                          child: Row(
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(Icons.thumb_up),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => CommentPage()),
-                                    );
-                                  },
-                                  child: Icon(
-                                    Icons.message,
-                                    size: 20.0,
-                                  ),
+                      ])
+                    ],
+                  ),
+                ),
+                Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: <Widget>[
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                  "https://images.pexels.com/photos/230860/pexels-photo-230860.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  8.0, 0.0, 0.0, 0.0),
+                              child: Text("风力发电机",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                  )),
+                            )
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding:
+                        const EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(Icons.thumb_up),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => CommentPage()),
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.message,
+                                  size: 20.0,
                                 ),
                               ),
-                              // Icon(Icons.more_horiz, size: 30,)
+                            ),
+                            // Icon(Icons.more_horiz, size: 30,)
 
-                              IconButton(
-                                icon: Icon(
-                                  Icons.more_horiz,
-                                ),
-                                onPressed: () {},
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.more_horiz,
+                              ),
+                              onPressed: () {},
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
             ),
-        ],
+          );
+        },
+
       ),
     );
   }

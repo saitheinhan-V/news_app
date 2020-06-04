@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:news/config/storage_manager.dart';
+import 'package:news/models/following.dart';
 import 'package:news/models/video.dart';
 
 import 'database/database.dart';
@@ -32,6 +34,8 @@ class Api {
   static const NEWPOST_URL = BASIC_URL + "/api/userpost";
 
   static const USERPOSTINFO_URL = BASIC_URL + "/api/userpost/info";
+
+  static const GET_ALL_USER_URL = BASIC_URL + "/api/user/all";
 
   static const NEWMOMENTPOST_URL = BASIC_URL + "/api/momentpost";
 
@@ -107,7 +111,67 @@ class Api {
   static const GET_USER_ARTICLE_PRODUCT = BASIC_URL + "api/auth/user/product/article";
 
   static const GET_VIDEO_URL = BASIC_URL + "/api/video/all";
+
   static const POST_VIDEOS = BASIC_URL + "api/videopost";
+
+  static const UNFOLLOW_USER_URL = BASIC_URL + "/api/unfollow/user";
+
+
+  //get recommend user
+  static Future fetchRecommendUsers () async{
+    await Future.delayed(Duration(seconds: 2));
+    List<User> userList=[];
+
+    List<User> users= await SQLiteDbProvider.db.getUser();
+    int id= users[0].userID;
+
+    var res = await http.post(UNFOLLOW_USER_URL,
+        body: {
+          'Userid' : id.toString(),
+        });
+    var body=jsonDecode(res.body);
+    var data=body['users'];
+    for(int i=0;i<data.length;i++){
+      Map map= data[i];
+      User user=User.fromJson(map);
+      userList.add(user);
+    }
+    return userList;
+  }
+
+  static Future getFollowing() async{
+    List<Following> followings= await SQLiteDbProvider.db.getFollowing();
+    return followings;
+  }
+
+  static Future fetchFollowing() async{
+    Future.delayed(Duration(seconds: 2));
+    List<User> users= await SQLiteDbProvider.db.getUser();
+    int id=0;
+    if(users.length !=0) {
+      id= users[0].userID;
+    }
+    List<Follow> followList = await getFollower(id); //get following list from server
+    SQLiteDbProvider.db.deleteFollowing();
+    List<Following> followingLists = new List<Following>();
+    for (var i = 0; i < followList.length; i++) {
+      Follow follow = followList[i];
+      var res = await http.post(Api.USER_INFO_URL, body: {
+        "Userid": follow.userID.toString(),
+      });
+      print(res.body.toString());
+      if (res.statusCode == 200) {
+        var body = jsonDecode(res.body);
+        Map map = body['data'];
+        Following following = Following.fromJson(map);
+        SQLiteDbProvider.db.insertFollowing(following);
+        followingLists.add(following);
+        res = null;
+        body = null;
+      }
+    }
+    return followingLists;
+  }
 
 
   // 文章

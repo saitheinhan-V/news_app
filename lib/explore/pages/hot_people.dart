@@ -28,18 +28,16 @@ class _HotPeopleState extends State<HotPeople> {
             ),
             Container(
                 height: MediaQuery.of(context).size.height,
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 1,
-                  mainAxisSpacing: 1,
-                  childAspectRatio: 0.67,
+                child: GridView.builder(
+                  itemCount: instructors.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:  3),
                   primary: false,
-                  children: <Widget>[
-                    ...instructors.map((e) {
-                      return buildInstructorGrid(e);
-                    }).toList()
-                  ],
-                ))
+                  itemBuilder: (context, index){
+                    return buildInstructorGrid(instructors[index]);
+                  },
+                )
+    )
           ],
         ),
       ),
